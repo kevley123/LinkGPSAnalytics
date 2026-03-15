@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+
 import { motion } from 'framer-motion';
 import { useHandshakeAuth } from '../hooks/useHandshakeAuth';
 import logo from '../assets/logo_home.png';

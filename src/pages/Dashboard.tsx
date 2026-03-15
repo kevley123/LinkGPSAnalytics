@@ -9,12 +9,13 @@ const statCards = [
   { label: 'Score de riesgo',    value: '—',  icon: TrendingUp,  color: 'text-brand-orange', bg: 'bg-brand-orange/10', border: 'border-brand-orange/20' },
 ];
 
-const fadeUp = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fadeUp: any = {
   hidden:   { opacity: 0, y: 20 },
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, delay: i * 0.08, ease: 'easeOut' },
+    transition: { duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 

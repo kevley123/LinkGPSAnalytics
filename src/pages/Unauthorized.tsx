@@ -1,10 +1,8 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { XCircle, ArrowLeft } from 'lucide-react';
 import logo from '../assets/logo_home.png';
 
 export default function Unauthorized() {
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center px-6">
