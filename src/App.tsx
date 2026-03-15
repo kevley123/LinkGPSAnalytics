@@ -3,6 +3,7 @@ import { AppProvider } from './context/AppContext';
 import LoadingScreen   from './pages/LoadingScreen';
 import Home            from './pages/Home';
 import Unauthorized    from './pages/Unauthorized';
+import AuthGuard       from './layout/AuthGuard';
 import DashboardLayout from './layout/DashboardLayout';
 import Dashboard       from './pages/Dashboard';
 
@@ -14,16 +15,19 @@ export default function App() {
           {/* Entry point — validates handshake token then redirects */}
           <Route path="/"              element={<LoadingScreen />} />
 
-          {/* Public landing */}
-          <Route path="/home"          element={<Home />} />
-
-          {/* Auth failure */}
+          {/* Auth failure (public) */}
           <Route path="/unauthorized"  element={<Unauthorized />} />
 
-          {/* Protected dashboard shell */}
-          <Route path="/dashboard"     element={<DashboardLayout />}>
-            <Route index               element={<Dashboard />} />
-            {/* Future nested routes: map, activity, alerts, stats, models, settings … */}
+          {/* Public landing (but requires session optionally handled in Home) */}
+          <Route path="/home"          element={<Home />} />
+
+          {/* Protected Routes */}
+          <Route element={<AuthGuard />}>
+            {/* Protected dashboard shell */}
+            <Route path="/dashboard"     element={<DashboardLayout />}>
+              <Route index               element={<Dashboard />} />
+              {/* Future nested routes */}
+            </Route>
           </Route>
 
           {/* Fallback */}

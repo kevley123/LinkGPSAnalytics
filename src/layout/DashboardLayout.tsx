@@ -1,19 +1,12 @@
 import { useState } from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
-import { useAppContext } from '../context/AppContext';
 
 export default function DashboardLayout() {
-  const { isAuthenticated } = useAppContext();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  // Guard: if not authenticated, redirect to unauthorized
-  if (!isAuthenticated) {
-    return <Navigate to="/unauthorized" replace />;
-  }
 
   return (
     <div className="flex h-screen bg-brand-dark overflow-hidden">

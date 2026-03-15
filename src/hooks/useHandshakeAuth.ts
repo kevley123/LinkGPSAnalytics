@@ -78,7 +78,7 @@ export const useHandshakeAuth = () => {
 
     if (!tokenToValidate) {
       setIsAuthLoading(false);
-      navigate('/unauthorized', { replace: true });
+      navigate('/home', { replace: true });
       return;
     }
 
@@ -110,7 +110,7 @@ export const useHandshakeAuth = () => {
           setAuthToken(null);
           setIsAuthenticated(false);
           setUser(null);
-          navigate('/unauthorized', { replace: true });
+          navigate('/home', { replace: true });
         }
       })
       .catch((e) => {
@@ -122,7 +122,7 @@ export const useHandshakeAuth = () => {
         setUser(null);
         
         setIsAuthLoading(false);
-        navigate('/unauthorized', { replace: true });
+        navigate('/home', { replace: true });
       });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
