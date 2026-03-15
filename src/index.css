@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-orange:      #F97316;
+    --brand-orange-light:#FB923C;
+    --brand-orange-dark: #EA580C;
+    --brand-dark:        #181818;
+    --brand-dark-2:      #222222;
+    --brand-dark-3:      #2A2A2A;
+    --brand-dark-4:      #333333;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body, #root {
+    height: 100%;
+    min-height: 100vh;
+  }
+
+  body {
+    background-color: #181818;
+    color: #f5f5f5;
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #222222;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #F97316;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #FB923C;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl
+           bg-brand-orange text-white font-semibold text-sm
+           hover:bg-brand-orange-light active:scale-95
+           transition-all duration-200 shadow-orange-sm
+           focus:outline-none focus:ring-2 focus:ring-brand-orange focus:ring-offset-2 focus:ring-offset-brand-dark;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl
+           border border-brand-dark-4 text-neutral-300 font-semibold text-sm
+           hover:border-brand-orange hover:text-brand-orange
+           active:scale-95 transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-brand-orange focus:ring-offset-2 focus:ring-offset-brand-dark;
+  }
+
+  .card {
+    @apply bg-brand-dark-2 border border-brand-dark-4 rounded-2xl p-6
+           hover:border-brand-orange/30 transition-colors duration-300;
+  }
+
+  .glass {
+    @apply bg-brand-dark/60 backdrop-blur-md border border-brand-dark-4/60;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDE68A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(249,115,22,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(249,115,22,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
