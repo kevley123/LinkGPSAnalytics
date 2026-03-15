@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Bell, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { NAV_LINKS } from '../constants/navLinks';
 import { useAppContext } from '../context/AppContext';
 import logo from '../assets/logo_home.png';
+import NotificationsPopover from '../components/NotificationsPopover';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -66,16 +67,8 @@ export default function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Notifications */}
-      <motion.button
-        className="relative w-9 h-9 rounded-lg flex items-center justify-center
-                   text-neutral-400 hover:text-brand-orange hover:bg-brand-orange/10 transition-colors"
-        whileTap={{ scale: 0.9 }}
-        aria-label="Notifications"
-      >
-        <Bell className="w-5 h-5" />
-        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-orange ring-2 ring-brand-dark" />
-      </motion.button>
+      {/* Notifications Popover */}
+      <NotificationsPopover />
 
       {/* User menu */}
       <div className="relative">
