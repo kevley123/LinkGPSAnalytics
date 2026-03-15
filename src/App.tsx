@@ -6,6 +6,7 @@ import Unauthorized    from './pages/Unauthorized';
 import AuthGuard       from './layout/AuthGuard';
 import DashboardLayout from './layout/DashboardLayout';
 import Dashboard       from './pages/Dashboard';
+import Notifications   from './pages/Notifications';
 import { useHandshakeAuth } from './hooks/useHandshakeAuth';
 
 const AuthContainer = ({ children }: { children: React.ReactNode }) => {
@@ -33,6 +34,7 @@ export default function App() {
             {/* Protected dashboard shell */}
             <Route path="/dashboard"     element={<DashboardLayout />}>
               <Route index               element={<Dashboard />} />
+              <Route path="notifications" element={<Notifications />} />
               {/* Future nested routes */}
             </Route>
           </Route>
