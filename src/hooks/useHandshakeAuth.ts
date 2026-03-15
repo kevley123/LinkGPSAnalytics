@@ -103,7 +103,7 @@ export const useHandshakeAuth = () => {
           
           // Automatically go to dashboard if token login or if they hit the root URL explicitly
           if (urlToken || location.pathname === '/') {
-            navigate('/dashboard', { replace: true });
+            navigate('/home', { replace: true });
           }
         } else {
           // Token is invalid/expired
