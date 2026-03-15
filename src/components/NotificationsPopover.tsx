@@ -129,7 +129,7 @@ export default function NotificationsPopover() {
         
         if (isMounted) {
           // Flatten / extract array data
-          const arr = Array.isArray(data) ? data : (data?.data ?? []);
+          const arr = Array.isArray(data) ? data : (data?.notificaciones ?? data?.data ?? []);
           // Limit to 10 for the paginated view per instructions
           setNotifs(arr.slice(0, 10));
         }

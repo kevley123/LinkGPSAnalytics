@@ -72,7 +72,7 @@ export default function Notifications() {
         const data = await res.json();
         
         if (isMounted) {
-          const arr = Array.isArray(data) ? data : (data?.data ?? []);
+          const arr = Array.isArray(data) ? data : (data?.notificaciones ?? data?.data ?? []);
           setNotifs(arr.slice(0, 50)); // Showing up to 50 on the full viewer
         }
       } catch (err) {
