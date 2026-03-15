@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import type { AppUser } from '../context/AppContext';
 import { useAppContext } from '../context/AppContext';
 
@@ -66,10 +66,10 @@ const realFetch = async (token: string): Promise<HandshakeResponse> => {
 export const useHandshakeAuth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { setUser, setAuthToken, setIsAuthenticated, setIsAuthLoading, authToken } = useAppContext();
 
   useEffect(() => {
-    // If the URL has a token, we handle it as a handshake login
     const urlToken = searchParams.get('token');
     
     // If we don't have a URL token, but we DO have a stored token from a previous session,
@@ -78,7 +78,9 @@ export const useHandshakeAuth = () => {
 
     if (!tokenToValidate) {
       setIsAuthLoading(false);
-      navigate('/home', { replace: true });
+      if (location.pathname === '/') {
+        navigate('/home', { replace: true });
+      }
       return;
     }
 
@@ -99,10 +101,9 @@ export const useHandshakeAuth = () => {
           setIsAuthenticated(true);
           setUser(user);
           
-          // Only redirect to /home if we came in via a URL token handshake
-          // Otherwise, we were just re-validating an existing session, stay where we are
-          if (urlToken) {
-            navigate('/home', { replace: true });
+          // Automatically go to dashboard if token login or if they hit the root URL explicitly
+          if (urlToken || location.pathname === '/') {
+            navigate('/dashboard', { replace: true });
           }
         } else {
           // Token is invalid/expired
@@ -110,7 +111,9 @@ export const useHandshakeAuth = () => {
           setAuthToken(null);
           setIsAuthenticated(false);
           setUser(null);
-          navigate('/home', { replace: true });
+          if (location.pathname === '/') {
+            navigate('/home', { replace: true });
+          }
         }
       })
       .catch((e) => {
@@ -122,7 +125,9 @@ export const useHandshakeAuth = () => {
         setUser(null);
         
         setIsAuthLoading(false);
-        navigate('/home', { replace: true });
+        if (location.pathname === '/') {
+          navigate('/home', { replace: true });
+        }
       });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,11 +1,8 @@
 
 import { motion } from 'framer-motion';
-import { useHandshakeAuth } from '../hooks/useHandshakeAuth';
 import logo from '../assets/logo_home.png';
 
 export default function LoadingScreen() {
-  useHandshakeAuth();
-
   return (
     <div className="fixed inset-0 bg-brand-dark flex flex-col items-center justify-center overflow-hidden">
       {/* Subtle radial glow background */}

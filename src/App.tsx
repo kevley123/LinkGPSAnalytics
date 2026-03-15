@@ -6,12 +6,19 @@ import Unauthorized    from './pages/Unauthorized';
 import AuthGuard       from './layout/AuthGuard';
 import DashboardLayout from './layout/DashboardLayout';
 import Dashboard       from './pages/Dashboard';
+import { useHandshakeAuth } from './hooks/useHandshakeAuth';
+
+const AuthContainer = ({ children }: { children: React.ReactNode }) => {
+  useHandshakeAuth();
+  return <>{children}</>;
+};
 
 export default function App() {
   return (
     <BrowserRouter>
       <AppProvider>
-        <Routes>
+        <AuthContainer>
+          <Routes>
           {/* Entry point — validates handshake token then redirects */}
           <Route path="/"              element={<LoadingScreen />} />
 
@@ -33,6 +40,7 @@ export default function App() {
           {/* Fallback */}
           <Route path="*"              element={<Navigate to="/" replace />} />
         </Routes>
+        </AuthContainer>
       </AppProvider>
     </BrowserRouter>
   );
