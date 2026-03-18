@@ -1,7 +1,15 @@
 import { motion } from 'framer-motion';
-import { ShieldAlert, Brain, Zap } from 'lucide-react';
+import { ShieldAlert, Brain } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import { useEffect } from 'react';
 
 export default function AlertasIA() {
+  const { alertsCount, setAlertsCount } = useAppContext();
+
+  useEffect(() => {
+    setAlertsCount(3); // Mock 3 active alerts
+  }, [setAlertsCount]);
+
   return (
     <div className="p-8">
       <motion.div 
@@ -9,14 +17,22 @@ export default function AlertasIA() {
         animate={{ opacity: 1, y: 0 }}
         className="glass p-8 rounded-3xl border border-white/10"
       >
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-brand-orange/20 flex items-center justify-center border border-brand-orange/30">
-            <ShieldAlert className="text-brand-orange w-6 h-6" />
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-brand-orange/20 flex items-center justify-center border border-brand-orange/30">
+              <ShieldAlert className="text-brand-orange w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-white">Alertas IA</h1>
+              <p className="text-neutral-400">Detección de comportamientos anómalos mediante modelos predictivos.</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-black text-white">Alertas IA</h1>
-            <p className="text-neutral-400">Detección de comportamientos anómalos mediante modelos predictivos.</p>
-          </div>
+          
+          {alertsCount > 0 && (
+            <div className="px-4 py-2 rounded-xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange font-bold text-sm animate-pulse">
+               {alertsCount} Alertas Críticas
+            </div>
+          )}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

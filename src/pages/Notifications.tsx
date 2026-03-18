@@ -51,7 +51,7 @@ const timeAgo = (dateStr: string) => {
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
 
 export default function Notifications() {
-  const { authToken } = useAppContext();
+  const { authToken, setNotifsCount } = useAppContext();
   const [loading, setLoading] = useState(true);
   const [notifs, setNotifs] = useState<NotifAPIResponse[]>([]);
 
@@ -73,6 +73,7 @@ export default function Notifications() {
         
         if (isMounted) {
           const arr = Array.isArray(data) ? data : (data?.notificaciones ?? data?.data ?? []);
+          setNotifsCount(data?.meta?.total_items || arr.length);
           setNotifs(arr.slice(0, 50)); // Showing up to 50 on the full viewer
         }
       } catch (err) {

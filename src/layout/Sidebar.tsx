@@ -4,6 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import { SIDEBAR_LINKS } from '../constants/sidebarLinks';
 import logo from '../assets/logo_home.png';
 import { clsx } from 'clsx';
+import { useAppContext } from '../context/AppContext';
 
 interface SidebarProps {
   open: boolean;
@@ -15,6 +16,7 @@ const SIDEBAR_WIDTH_CLOSED = 64;
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const location = useLocation();
+  const { notifsCount, alertsCount } = useAppContext();
 
   const isActive = (href: string) =>
     location.pathname === href || location.pathname.startsWith(href + '/');
@@ -23,7 +25,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const sections = SIDEBAR_LINKS.reduce<Record<string, typeof SIDEBAR_LINKS>>((acc, link) => {
     const sec = link.section ?? 'General';
     if (!acc[sec]) acc[sec] = [];
-    acc[sec].push(link);
+    
+    // Inject dynamic badges
+    const linkWithBadge = { ...link };
+    if (link.label === 'Notificaciones') linkWithBadge.badge = notifsCount;
+    if (link.label === 'Alertas IA') linkWithBadge.badge = alertsCount;
+    
+    acc[sec].push(linkWithBadge);
     return acc;
   }, {});
 

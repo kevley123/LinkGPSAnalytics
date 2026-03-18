@@ -18,10 +18,14 @@ interface AppContextType {
   authToken: string | null;
   isAuthenticated: boolean;
   isAuthLoading: boolean;
+  notifsCount: number;
+  alertsCount: number;
   setUser: (user: AppUser | null) => void;
   setAuthToken: (token: string | null) => void;
   setIsAuthenticated: (v: boolean) => void;
   setIsAuthLoading: (v: boolean) => void;
+  setNotifsCount: (v: number) => void;
+  setAlertsCount: (v: number) => void;
   logout: () => void;
 }
 
@@ -32,6 +36,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [authToken, setAuthToken] = useState<string | null>(localStorage.getItem('auth_token'));
   const [isAuthenticated, setIsAuthenticated] = useState(!!authToken);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [notifsCount, setNotifsCount] = useState(0);
+  const [alertsCount, setAlertsCount] = useState(0);
 
   const logout = () => {
     localStorage.removeItem('auth_token');
@@ -47,10 +53,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         authToken,
         isAuthenticated,
         isAuthLoading,
+        notifsCount,
+        alertsCount,
         setUser,
         setAuthToken,
         setIsAuthenticated,
         setIsAuthLoading,
+        setNotifsCount,
+        setAlertsCount,
         logout,
       }}
     >

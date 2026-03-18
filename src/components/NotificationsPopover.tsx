@@ -93,7 +93,7 @@ const timeAgo = (dateStr: string) => {
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
 
 export default function NotificationsPopover() {
-  const { authToken } = useAppContext();
+  const { authToken, setNotifsCount } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notifs, setNotifs] = useState<NotifAPIResponse[]>([]);
@@ -131,6 +131,7 @@ export default function NotificationsPopover() {
           // Flatten / extract array data
           const arr = Array.isArray(data) ? data : (data?.notificaciones ?? data?.data ?? []);
           // Limit to 10 for the paginated view per instructions
+          setNotifsCount(data?.meta?.total_items || arr.length);
           setNotifs(arr.slice(0, 10));
         }
       } catch (err) {
