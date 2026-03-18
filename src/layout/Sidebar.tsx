@@ -124,7 +124,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                       />
                     )}
-                    <Icon className="w-4.5 h-4.5 shrink-0" style={{ width: 18, height: 18 }} />
+                    <div className="relative shrink-0">
+                      <Icon className="w-4.5 h-4.5" style={{ width: 18, height: 18 }} />
+                      {link.isSpecial && (
+                        <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
+                        </span>
+                      )}
+                    </div>
 
                     <AnimatePresence>
                       {open && (

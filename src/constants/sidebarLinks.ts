@@ -1,12 +1,22 @@
 import {
   LayoutDashboard,
-  MapPin,
+  Bell,
+  Map,
   Activity,
   ShieldAlert,
-  BarChart3,
+  Car,
   Brain,
+  BarChart3,
+  Truck,
+  AlertTriangle,
+  Repeat,
+  Smartphone,
+  Zap,
+  History,
+  Hexagon,
+  MapPin,
   Settings,
-  Bell,
+  LogOut,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -16,21 +26,38 @@ export interface SidebarLink {
   icon: LucideIcon;
   badge?: number;
   section?: string;
+  isSpecial?: boolean; // For transmission animation
 }
 
 /** Links shown in the dashboard sidebar */
 export const SIDEBAR_LINKS: SidebarLink[] = [
-  // Main
+  // Principal
   { label: 'Dashboard',      href: '/dashboard',            icon: LayoutDashboard, section: 'Principal' },
-  { label: 'Mapa en vivo',   href: '/dashboard/map',        icon: MapPin,          section: 'Principal' },
-  { label: 'Actividad',      href: '/dashboard/activity',   icon: Activity,        section: 'Principal' },
+  { label: 'Notificaciones', href: '/dashboard/notifications', icon: Bell,          section: 'Principal' },
+  { label: 'Mapa en vivo',   href: '/dashboard/mapa_vivo',   icon: Map,             section: 'Principal', isSpecial: true },
+  { label: 'Mi actividad',   href: '/dashboard/actividad_mapa', icon: Activity,      section: 'Principal' },
 
-  // Analytics
-  { label: 'Alertas ML',     href: '/dashboard/alerts',     icon: ShieldAlert,     section: 'Analíticas', badge: 3 },
-  { label: 'Estadísticas',   href: '/dashboard/stats',      icon: BarChart3,       section: 'Analíticas' },
-  { label: 'Modelos IA',     href: '/dashboard/models',     icon: Brain,           section: 'Analíticas' },
+  // Alertas
+  { label: 'Alertas IA',     href: '/dashboard/alertas_ia',  icon: ShieldAlert,     section: 'Alertas' },
+  { label: 'Alertas Vehiculares', href: '/dashboard/alertas_vehiculares', icon: Car, section: 'Alertas' },
 
-  // System
-  { label: 'Notificaciones', href: '/dashboard/notifications', icon: Bell,         section: 'Sistema', badge: 5 },
-  { label: 'Configuración',  href: '/dashboard/settings',   icon: Settings,        section: 'Sistema' },
+  // Analíticas
+  { label: 'Modelo IA',      href: '/dashboard/modelo_ia',   icon: Brain,           section: 'Analíticas' },
+  { label: 'Estadísticas',   href: '/dashboard/estadisticas',icon: BarChart3,       section: 'Analíticas' },
+  { label: 'Logística',      href: '/dashboard/logistica',   icon: Truck,           section: 'Analíticas' },
+  { label: 'Mapa anomalías', href: '/dashboard/mapa_anomalia',icon: AlertTriangle,   section: 'Analíticas' },
+  { label: 'Rutas frecuentes',href: '/dashboard/rutas_frecuentes', icon: Repeat,     section: 'Analíticas' },
+
+  // Dispositivo
+  { label: 'Mi dispositivo', href: '/dashboard/mi_dispositivo', icon: Smartphone,   section: 'Dispositivo', isSpecial: true },
+  { label: 'Estado dispositivo', href: '/dashboard/mi_dispositivo_status', icon: Zap, section: 'Dispositivo' },
+  { label: 'Eventos dispositivo', href: '/dashboard/mi_dispositivo_eventos', icon: History, section: 'Dispositivo' },
+
+  // Geocercas
+  { label: 'Mis geocercas',  href: '/dashboard/gecercas',    icon: Hexagon,         section: 'Geocercas' },
+  { label: 'Eventos geocerca', href: '/dashboard/geocercas_eventos', icon: MapPin,  section: 'Geocercas' },
+
+  // Sistema
+  { label: 'Configuración',  href: '/dashboard/configuracion', icon: Settings,      section: 'Sistema' },
+  { label: 'Salir a inicio', href: '/home',                 icon: LogOut,          section: 'Sistema' },
 ];
