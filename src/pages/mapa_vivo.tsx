@@ -211,7 +211,7 @@ export default function MapaVivo() {
         const fetchVehicles = async () => {
             try {
                 setLoadingVeh(true);
-                const res = await fetch(`${API_BASE}/analytics/mis_vehiculos`, {
+                const res = await fetch(`${API_BASE}/api/analytics/mis_vehiculos`, {
                     headers: { 'Authorization': `Bearer ${authToken}`, 'Accept': 'application/json' },
                 });
                 if (!res.ok) throw new Error(`Error ${res.status}`);
