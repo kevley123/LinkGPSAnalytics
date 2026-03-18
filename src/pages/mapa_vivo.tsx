@@ -230,7 +230,7 @@ export default function MapaVivo() {
         if (!authToken || !vehId) return;
         setLoadingLoc(true);
         try {
-            const res = await fetch(`${API_BASE}/analytics/mi_ubicacion/${vehId}`, {
+            const res = await fetch(`${API_BASE}/api/analytics/mi_ubicacion/${vehId}`, {
                 headers: { 'Authorization': `Bearer ${authToken}`, 'Accept': 'application/json' },
             });
 
@@ -420,7 +420,7 @@ export default function MapaVivo() {
                         onSolicitar={() => {
                             setErrorModal(null);
                             // Simplified URL as per user instruction "luego yo lo configuro"
-                            window.location.href = 'https://link-gps-frontend.vercel.app/pricing';
+                            window.location.href = 'https://link-gps-frontend.vercel.app/user/dashboard/servicios';
                         }}
                     />
                 )}
