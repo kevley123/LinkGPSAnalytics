@@ -1,14 +1,14 @@
 import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Activity, 
-  ShieldCheck, Globe, 
-  ChevronRight, AlertTriangle
+import { 
+  Zap
 } from 'lucide-react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
 import { useAppContext } from '../context/AppContext';
+import logo from '../assets/logo_home.png';
 
 // --- Heatmap Layer Component ---
 const HeatmapLayer = memo(({ points }: { points: any[] }) => {
@@ -19,16 +19,19 @@ const HeatmapLayer = memo(({ points }: { points: any[] }) => {
     
     // @ts-ignore
     const heat = L.heatLayer(
-      points.map(p => [p.lat, p.lon, p.intensity * 2]), // Amplify intensity for visibility
+      points.map(p => [p.lat, p.lon, p.intensity * 3]), // Multiplier for visibility
       {
-        radius: 35,
-        blur: 25,
-        maxZoom: 10,
+        radius: 30,
+        blur: 20,
+        maxOpacity: 0.8,
+        minOpacity: 0.3,
         gradient: {
-            0.2: '#3B82F6', // Blue
-            0.4: '#F97316', // Orange
-            0.7: '#EF4444', // Red
-            1.0: '#7F1D1D'  // Dark Red
+            0.1: 'blue',
+            0.3: 'cyan',
+            0.5: 'green',
+            0.7: 'yellow',
+            0.9: 'orange',
+            1.0: 'red'
         }
       }
     ).addTo(map);
@@ -48,15 +51,16 @@ const DigitalClock = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-end">
-      <div className="text-2xl font-black text-white tracking-tighter tabular-nums flex items-baseline gap-1">
+    <div className="flex items-center gap-3">
+      <div className="text-xl font-black text-white tracking-tighter tabular-nums flex items-baseline gap-1">
         {time.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false })}
-        <span className="text-brand-orange text-xs animate-pulse">
+        <span className="text-brand-orange text-[10px] animate-pulse">
            {time.getSeconds().toString().padStart(2, '0')}
         </span>
       </div>
-      <div className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">
-        Real Time Telemetry
+      <div className="w-px h-4 bg-white/10" />
+      <div className="text-[8px] font-black text-neutral-500 uppercase tracking-widest leading-none">
+        Telemetry<br/>Live
       </div>
     </div>
   );
@@ -94,16 +98,16 @@ export default function Dashboard() {
   }, [authToken]);
 
   return (
-    <div className="relative h-[calc(100vh-120px)] w-full overflow-hidden rounded-[48px] border border-white/5 bg-brand-dark shadow-3xl">
+    <div className="relative h-[calc(100vh-120px)] w-full overflow-hidden rounded-[40px] border border-white/5 bg-brand-dark shadow-3xl">
       
-      {/* ── Background Map (Silver Tech View) ────────────────────────────────── */}
+      {/* ── Background Map (Ultra Dark Tech View) ───────────────────────────── */}
       <div className="absolute inset-0 z-0 silver-map-container">
         <MapContainer
-          center={[-16.5, -64.0]} // Focus on Bolivia
-          zoom={6}
+          center={[-16.5, -67.0]} // Shifted to see La Paz better
+          zoom={7}
           zoomControl={false}
           className="h-full w-full"
-          style={{ background: '#111' }}
+          style={{ background: '#080808' }}
         >
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
@@ -112,156 +116,117 @@ export default function Dashboard() {
           {!loading && <HeatmapLayer points={riskData} />}
         </MapContainer>
         
-        {/* Overlay Dark Gradient for Contrast */}
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-brand-dark via-transparent to-brand-dark/40" />
+        {/* Dark Overlays */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-brand-dark via-transparent to-brand-dark/60" />
+        <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.8)]" />
       </div>
 
-      {/* ── Header Overlay ─────────────────────────────────────────────────── */}
-      <div className="absolute top-8 left-8 right-8 z-10 flex items-start justify-between">
+      {/* ── Header Overlay (Slim Line) ────────────────────────────────────────── */}
+      <div className="absolute top-6 left-6 right-6 z-10 flex items-center justify-between">
          <motion.div 
-           initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-           className="bg-brand-dark-2/40 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 shadow-2xl flex items-center gap-6"
+           initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+           className="bg-brand-dark-2/50 backdrop-blur-xl border border-white/10 rounded-full pl-3 pr-8 py-2 shadow-2xl flex items-center gap-6"
          >
-            <div className="w-14 h-14 rounded-2xl bg-brand-orange flex items-center justify-center shadow-lg shadow-brand-orange/20">
-               <Globe className="text-white" size={28} />
+            <div className="w-10 h-10 rounded-full bg-brand-dark-3 flex items-center justify-center border border-white/10 p-2">
+               <img src={logo} alt="LinkGPS" className="w-full h-auto object-contain" />
             </div>
-            <div>
-               <p className="text-neutral-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Status Global Analytics</p>
-               <h1 className="text-xl font-black text-white uppercase tracking-tight">Hola, {user?.name?.split(' ')[0] ?? 'Operator'}</h1>
+            <div className="flex flex-col">
+               <p className="text-neutral-500 text-[8px] font-black uppercase tracking-[0.2em] -mb-1">Intelligence Dashboard</p>
+               <h1 className="text-sm font-black text-white uppercase tracking-tight">Hola, {user?.name?.split(' ')[0] ?? 'Operator'}</h1>
+            </div>
+            <div className="hidden md:flex items-center gap-2 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20 ml-2">
+               <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+               <span className="text-[8px] font-black text-green-400 uppercase tracking-widest">IA Engine Online</span>
             </div>
          </motion.div>
 
          <motion.div 
-           initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-           className="bg-brand-dark-2/40 backdrop-blur-xl border border-white/10 rounded-[30px] px-8 py-5 shadow-2xl"
+           initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+           className="bg-brand-dark-2/50 backdrop-blur-xl border border-white/10 rounded-full px-6 py-2 shadow-2xl"
          >
             <DigitalClock />
          </motion.div>
       </div>
 
-      {/* ── Left Situation Report ─────────────────────────────────────────── */}
+      {/* ── Right Small Statistics Matrix ────────────────────────────────────── */}
       <motion.div 
-        initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}
-        className="absolute left-8 top-44 w-80 h-[calc(100%-400px)] z-10 flex flex-col gap-4 pointer-events-none"
+        initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}
+        className="absolute right-6 top-24 w-56 z-10 flex flex-col gap-3 pointer-events-auto"
       >
-        <div className="bg-brand-dark-3/60 backdrop-blur-2xl border border-white/10 rounded-[40px] p-8 pointer-events-auto shadow-2xl overflow-y-auto">
-           <div className="flex items-center gap-2 mb-6">
-              <Activity className="text-brand-orange" size={20} />
-              <h3 className="text-sm font-black text-white uppercase tracking-widest">Reporte de Situación</h3>
-           </div>
+        <div className="bg-brand-dark-2/60 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 shadow-2xl">
+           <h3 className="text-[9px] font-black text-neutral-500 uppercase tracking-[0.2em] mb-6 text-center">Intelligence Matrix</h3>
            
            <div className="space-y-6">
-              <p className="text-neutral-400 text-xs leading-relaxed font-medium">
-                 Actualmente, el motor de IA de **LinkGPS** está procesando <span className="text-white font-black">{riskData.length}</span> puntos críticos en el territorio boliviano.
-              </p>
-              
-              <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20">
-                 <div className="flex items-center gap-2 mb-2 text-red-500">
-                    <AlertTriangle size={14} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Alerta de Intensidad</span>
-                 </div>
-                 <p className="text-[10px] text-red-100/60 leading-tight">
-                    Se detecta un incremento del 12% en anomalías de ruta en el eje troncal durante las últimas 24 horas.
-                 </p>
+              <div className="flex items-center justify-between">
+                 <div className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">Alertas</div>
+                 <div className="text-xl font-black text-white tracking-tighter tabular-nums">{stats.alerts}</div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-brand-orange/5 border border-white/5">
-                 <h4 className="text-[10px] font-black text-white uppercase tracking-widest mb-2 flex items-center justify-between">
-                    Top Zonas de Riesgo <ChevronRight size={12} className="text-brand-orange" />
-                 </h4>
-                 <div className="space-y-2">
-                    {[1,2,3].map(i => (
-                       <div key={i} className="flex items-center justify-between text-[11px] font-medium text-neutral-400">
-                          <span>Cluster IA {i}</span>
-                          <span className="text-white font-black">Nivel {9 - i}</span>
-                       </div>
-                    ))}
-                 </div>
+              <div className="h-px bg-white/5 w-full" />
+
+              <div className="flex items-center justify-between">
+                 <div className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">Anomalías</div>
+                 <div className="text-xl font-black text-cyan-400 tracking-tighter tabular-nums">{stats.anomalies}</div>
+              </div>
+
+              <div className="h-px bg-white/5 w-full" />
+
+              <div className="flex items-center justify-between">
+                 <div className="text-[9px] font-black text-white uppercase tracking-widest">Risk Score</div>
+                 <div className="text-2xl font-black text-brand-orange tracking-tighter tabular-nums">{stats.riskScore}</div>
               </div>
            </div>
+
+           <button className="mt-6 w-full py-3 rounded-xl bg-white/5 border border-white/5 hover:bg-brand-orange hover:text-white text-[8px] font-black text-neutral-500 uppercase tracking-[0.2em] transition-all">
+              Auditoría Full
+           </button>
         </div>
 
-        {/* What our web does */}
-        <div className="bg-brand-orange/10 backdrop-blur-xl border border-brand-orange/20 rounded-[32px] p-6 pointer-events-auto">
-           <div className="flex items-center gap-3 mb-3">
-              <ShieldCheck className="text-brand-orange" size={20} />
-              <h4 className="text-[11px] font-black text-white uppercase tracking-widest">Nuestra Tecnología</h4>
+        {/* Legend Shrunken */}
+        <div className="bg-brand-dark-3/40 backdrop-blur-md border border-white/5 rounded-2xl p-4 space-y-2">
+           <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-600" />
+              <span className="text-[8px] font-bold text-neutral-400 uppercase tracking-wider">Riesgo Extremo</span>
            </div>
-           <p className="text-[10px] text-neutral-300 leading-relaxed font-medium">
-              Utilizamos indexación geoespacial **H3 Uber** combinada con redes neuronales recurrentes para predecir incidentes antes de que ocurran. Monitoreamos patrones ocultos en cada coordenada.
-           </p>
+           <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+              <span className="text-[8px] font-bold text-neutral-400 uppercase tracking-wider">Precaución</span>
+           </div>
         </div>
       </motion.div>
 
-      {/* ── Right Statistics Analytics ────────────────────────────────────── */}
+      {/* ── Bottom Info Card (Technology) ─────────────────────────────────── */}
       <motion.div 
-        initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}
-        className="absolute right-8 top-44 w-72 z-10 flex flex-col gap-4 pointer-events-auto"
+        initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+        className="absolute bottom-6 left-6 right-6 z-10 pointer-events-none flex justify-between items-end"
       >
-        <div className="bg-brand-dark-2/50 backdrop-blur-xl border border-white/10 rounded-[40px] p-8 shadow-2xl">
-           <h3 className="text-xs font-black text-neutral-500 uppercase tracking-[0.2em] mb-8 text-center">Intelligence Matrix</h3>
-           
-           <div className="space-y-8">
-              <div className="text-center group">
-                 <div className="text-4xl font-black text-white tracking-tighter mb-1 group-hover:text-brand-orange transition-colors tabular-nums">
-                    {stats.alerts}
-                 </div>
-                 <p className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">Alertas de Pánico</p>
-              </div>
-
-              <div className="h-px bg-white/5 w-1/2 mx-auto" />
-
-              <div className="text-center group">
-                 <div className="text-4xl font-black text-white tracking-tighter mb-1 group-hover:text-cyan-400 transition-colors tabular-nums">
-                    {stats.anomalies}
-                 </div>
-                 <p className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">Anomalías Detectadas</p>
-              </div>
-
-              <div className="h-px bg-white/5 w-1/2 mx-auto" />
-
-              <div className="text-center group">
-                 <div className="relative inline-block">
-                    <div className="text-5xl font-black text-brand-orange tracking-tighter mb-1 tabular-nums">
-                       {stats.riskScore}
-                    </div>
-                    <span className="absolute -top-1 -right-4 text-[10px] font-black text-neutral-500">MAX</span>
-                 </div>
-                 <p className="text-[9px] font-black text-white uppercase tracking-widest">Global Risk Score</p>
-              </div>
+        <div className="bg-brand-orange/10 backdrop-blur-2xl border border-brand-orange/20 rounded-3xl p-5 w-80 pointer-events-auto">
+           <div className="flex items-center gap-2 mb-2">
+              <Zap className="text-brand-orange" size={14} />
+              <h4 className="text-[9px] font-black text-white uppercase tracking-widest">Tecnología de Riesgo H3</h4>
            </div>
+           <p className="text-[9px] text-neutral-400 leading-relaxed font-medium">
+              Este mapa utiliza indexación **H3 Uber** de alta resolución para visualizar el riesgo nacional. El gradiente térmico detecta acumulaciones inusuales de incidentes y robos en tiempo real para optimizar tu logística.
+           </p>
+        </div>
 
-           <button className="mt-10 w-full py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-brand-orange hover:text-white hover:border-brand-orange text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] transition-all">
-              Generar Auditoría
+        <div className="flex gap-2 pointer-events-auto">
+           <button className="h-10 px-6 rounded-full bg-brand-dark-2 border border-white/10 text-[9px] font-black text-white uppercase tracking-widest hover:bg-brand-orange transition-colors">
+              Nacional
+           </button>
+           <button className="h-10 px-6 rounded-full bg-white/5 border border-white/5 text-[9px] font-black text-neutral-500 uppercase tracking-widest">
+              Filtros IA
            </button>
         </div>
       </motion.div>
 
-      {/* ── Bottom Floating Legend ────────────────────────────────────────── */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex items-center gap-8 bg-brand-dark/80 backdrop-blur-xl border border-white/10 px-10 py-5 rounded-full shadow-3xl">
-         <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-red-600 shadow-lg shadow-red-600/40" />
-            <span className="text-[10px] font-black text-white uppercase tracking-widest">Zona de Extremo Riesgo</span>
-         </div>
-         <div className="w-px h-6 bg-white/10" />
-         <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-orange-500" />
-            <span className="text-[10px] font-black text-white uppercase tracking-widest">Tránsito Precautorio</span>
-         </div>
-         <div className="w-px h-6 bg-white/10" />
-         <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span className="text-[10px] font-black text-white uppercase tracking-widest">Zonas Activas</span>
-         </div>
-      </div>
-
-      {/* ── Custom CSS for Silver Map Theme ────────────────────────────────  */}
+      {/* ── Custom CSS for Ultra Dark Theme ────────────────────────────────  */}
       <style>{`
         .silver-map-container .leaflet-tile-pane {
-           filter: grayscale(100%) brightness(0.9) contrast(1.1) invert(5%);
+           filter: grayscale(100%) brightness(0.6) contrast(1.3) invert(10%);
         }
         .silver-map-container .leaflet-container {
-           background: #111 !important;
+           background: #080808 !important;
         }
         /* Custom scrollbar for situation report */
         .overflow-y-auto::-webkit-scrollbar { width: 4px; }
