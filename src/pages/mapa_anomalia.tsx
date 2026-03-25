@@ -12,10 +12,190 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, AreaChart, Area,
+} from 'recharts';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
+
+// ── Weekly Trends Modal ───────────────────────────────────────────────────────
+const ModalTendencia = memo(({ isOpen, onClose, vehId }: { isOpen: boolean; onClose: () => void; vehId: number }) => {
+  const { authToken } = useAppContext();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen && vehId && authToken) {
+      const fetchTrends = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          const res = await fetch(`${API_BASE}/api/analytics/tendencia-semanal-anomalia/${vehId}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+          });
+          if (res.status === 404) throw new Error("No hay datos suficientes para generar tendencias.");
+          if (!res.ok) throw new Error("Error al obtener tendencias.");
+          const json = await res.json();
+          setData(json);
+        } catch (e: any) {
+          setError(e.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchTrends();
+    }
+  }, [isOpen, vehId, authToken]);
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-brand-dark/95 backdrop-blur-xl"
+        onClick={onClose}
+      />
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        className="relative w-full max-w-4xl bg-brand-dark-2 rounded-[40px] border border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.8)] overflow-hidden max-h-[90vh] flex flex-col"
+      >
+        {/* Header */}
+        <div className="p-8 border-b border-white/5 flex items-center justify-between shrink-0">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
+                <Zap className="text-brand-orange" size={24} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Tendencia de Anomalías</h3>
+                <p className="text-neutral-500 text-xs font-bold uppercase tracking-widest mt-1">Análisis Semanal · IA LinkGPS</p>
+              </div>
+           </div>
+           <button onClick={onClose} className="p-3 bg-white/5 hover:bg-white/10 rounded-full text-neutral-500 hover:text-white transition-all">
+             <X size={24} />
+           </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-8 overflow-y-auto custom-scrollbar space-y-8 flex-1">
+          {loading ? (
+            <div className="h-[400px] flex flex-col items-center justify-center gap-4">
+              <Loader2 size={48} className="animate-spin text-brand-orange" />
+              <p className="text-neutral-500 font-black text-xs uppercase tracking-widest italic">Interrogando Red Neuronal...</p>
+            </div>
+          ) : error ? (
+            <div className="h-[400px] flex flex-col items-center justify-center gap-4 text-center">
+               <AlertCircle size={48} className="text-red-500/50" />
+               <p className="text-white font-bold">{error}</p>
+               <button onClick={onClose} className="mt-4 px-8 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-neutral-400">Cerrar</button>
+            </div>
+          ) : (
+            <>
+              {/* KPI Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 {[
+                   { label: 'Analizados', val: data.summary.total_points_analyzed, sub: 'Vectores Totales', icon: Activity, color: 'text-blue-500' },
+                   { label: 'Anomalías', val: data.summary.total_anomalies_found, sub: 'Incidentes ML', icon: AlertCircle, color: 'text-red-500' },
+                   { label: 'Tasa Global', val: data.summary.global_anomaly_rate, sub: 'Índice de Riesgo', icon: Thermometer, color: 'text-brand-orange' }
+                 ].map((kpi, i) => (
+                   <div key={i} className="bg-brand-dark-3 p-6 rounded-[28px] border border-white/5 group hover:border-brand-orange/20 transition-all">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`p-2 rounded-xl bg-white/5 ${kpi.color}`}>
+                          <kpi.icon size={18} />
+                        </div>
+                        <div className="relative group/tooltip">
+                          <Info size={12} className="text-neutral-700 cursor-help" />
+                          <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-brand-dark border border-white/10 rounded-xl text-[10px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-[11000]">
+                            {kpi.sub}: Métrica calculada en base a los últimos 7 días de operación.
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.1em]">{kpi.label}</p>
+                      <p className="text-3xl font-black text-white mt-1 tabular-nums">{kpi.val}</p>
+                   </div>
+                 ))}
+              </div>
+
+              {/* Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
+                 <div className="glass p-6 rounded-[32px] border border-white/5">
+                    <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                       <Zap size={14} className="text-brand-orange" /> Picos Horarios de Anomalía
+                    </h4>
+                    <div className="h-[250px] w-full">
+                       <ResponsiveContainer width="100%" height="100%">
+                         <BarChart data={data.peak_anomaly_hours}>
+                           <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                           <XAxis dataKey="hour" stroke="#444" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}h`} />
+                           <YAxis stroke="#444" fontSize={10} axisLine={false} tickLine={false} />
+                           {/* @ts-ignore */}
+                           <Tooltip 
+                             contentStyle={{ background: '#0a0a0a', border: '1px solid #333', borderRadius: '12px', fontSize: '10px', color: '#fff' }}
+                             itemStyle={{ color: '#F97316' }}
+                           />
+                           <Bar dataKey="count" fill="#F97316" radius={[4, 4, 0, 0]} />
+                         </BarChart>
+                       </ResponsiveContainer>
+                    </div>
+                    <p className="text-[10px] text-neutral-500 italic mt-4">* Distribución de eventos por hora del día consolidado.</p>
+                 </div>
+
+                 <div className="glass p-6 rounded-[32px] border border-white/5">
+                    <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                       <Activity size={14} className="text-brand-orange" /> Tendencia Diaria (Desvíos)
+                    </h4>
+                    <div className="h-[250px] w-full">
+                       <ResponsiveContainer width="100%" height="100%">
+                         <AreaChart data={data.daily_trends}>
+                           <defs>
+                             <linearGradient id="colorAnom" x1="0" y1="0" x2="0" y2="1">
+                               <stop offset="5%" stopColor="#F97316" stopOpacity={0.3}/>
+                               <stop offset="95%" stopColor="#F97316" stopOpacity={0}/>
+                             </linearGradient>
+                           </defs>
+                           <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                           <XAxis dataKey="date" stroke="#444" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(v) => v.split('-').slice(1).join('/')} />
+                           <YAxis stroke="#444" fontSize={10} axisLine={false} tickLine={false} />
+                           {/* @ts-ignore */}
+                           <Tooltip 
+                             contentStyle={{ background: '#0a0a0a', border: '1px solid #333', borderRadius: '12px', fontSize: '10px' }}
+                           />
+                           <Area type="monotone" dataKey="anomaly_points" stroke="#F97316" fillOpacity={1} fill="url(#colorAnom)" strokeWidth={3} />
+                           <Area type="monotone" dataKey="total_points" stroke="#3b82f6" fillOpacity={0} strokeWidth={1} strokeDasharray="5 5" />
+                         </AreaChart>
+                       </ResponsiveContainer>
+                    </div>
+                    <p className="text-[10px] text-neutral-500 italic mt-4">* Comparativo entre puntos totales procesados y anomalías.</p>
+                 </div>
+              </div>
+
+              {/* Data Explanation Footnote */}
+              <div className="bg-brand-orange/5 border border-brand-orange/10 p-6 rounded-[28px] mt-4">
+                 <div className="flex gap-4 items-start">
+                    <div className="p-2 rounded-xl bg-brand-orange/20 text-brand-orange shrink-0">
+                       <Info size={16} />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-black text-white uppercase tracking-wider mb-2">Interpretación Técnica</h5>
+                      <p className="text-[11px] text-neutral-400 leading-relaxed font-medium">
+                        El gráfico de **Picos Horarios** indica los momentos críticos del día donde el modelo reporta mayor entropía. Si un pico coincide con horas de descanso u operación inusual, investigue el entorno. La **Tendencia Diaria** muestra la estabilidad del modelo IA frente al volumen de datos procesados.
+                      </p>
+                    </div>
+                 </div>
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </div>,
+    document.body
+  );
+});
 
 // ── Heatmap Layer Component ──────────────────────────────────────────────────
 const HeatmapLayer = ({ points, options }: { points: any[]; options: any }) => {
@@ -153,6 +333,8 @@ export default function MapaAnomalia() {
   const [blur, setBlur] = useState(8);
   const [intensity, setIntensity] = useState(2.0);
 
+  const [showWeeklyTrends, setShowWeeklyTrends] = useState(false);
+
   useEffect(() => {
     if (!authToken) return;
     const fetchVehicles = async () => {
@@ -267,12 +449,21 @@ export default function MapaAnomalia() {
             className="flex flex-col gap-4"
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
-               <button 
-                onClick={() => { setStep(1); setVehSel(null); setData(null); }}
-                className="flex items-center gap-2 text-neutral-500 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] transition-colors"
-               >
-                 <ChevronLeft size={16} /> Volver a selección
-               </button>
+               <div className="flex items-center gap-6">
+                 <button 
+                  onClick={() => { setStep(1); setVehSel(null); setData(null); }}
+                  className="flex items-center gap-2 text-neutral-500 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] transition-colors"
+                 >
+                   <ChevronLeft size={16} /> Volver a selección
+                 </button>
+
+                 <button 
+                   onClick={() => setShowWeeklyTrends(true)}
+                   className="px-4 py-2 rounded-xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange font-black text-[10px] uppercase tracking-widest hover:bg-brand-orange hover:text-white transition-all flex items-center gap-2 shadow-lg shadow-brand-orange/5"
+                 >
+                   <Zap size={14} className="fill-current" /> Tendencia Semanal
+                 </button>
+               </div>
                
                <div className="flex items-center gap-4 glass px-6 py-2 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
                   <div className="flex items-center gap-2 pr-4 border-r border-white/10 shrink-0">
@@ -453,6 +644,11 @@ export default function MapaAnomalia() {
             }}
           />
         )}
+        <ModalTendencia 
+          isOpen={showWeeklyTrends} 
+          onClose={() => setShowWeeklyTrends(false)} 
+          vehId={vehSel?.id} 
+        />
       </AnimatePresence>
 
       <style>{`

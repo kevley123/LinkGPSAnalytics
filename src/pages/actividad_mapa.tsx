@@ -138,6 +138,70 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
   )
 );
 
+// ── Custom Calendar Grid component ──────────────────────────────────────────
+const CalendarGrid = memo(({ selectedDate, onSelect }: { selectedDate: string, onSelect: (d: string) => void }) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const totalDays = daysInMonth(year, month);
+  const startOffset = firstDayOfMonth(year, month);
+
+  const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+  const monthName = currentMonth.toLocaleString('default', { month: 'long' });
+
+  const isSelected = (day: number) => {
+    if (!selectedDate) return false;
+    const d = new Date(selectedDate + 'T12:00:00');
+    return d.getDate() === day && d.getMonth() === month && d.getFullYear() === year;
+  };
+
+  const handleSelect = (day: number) => {
+    const d = new Date(year, month, day);
+    const dateStr = d.toISOString().split('T')[0];
+    onSelect(dateStr);
+  };
+
+  const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
+  const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{monthName} {year}</h4>
+        <div className="flex gap-2">
+          <button onClick={prevMonth} className="p-1 hover:bg-white/10 rounded-lg text-neutral-500 hover:text-white transition-all"><ChevronLeft size={14} /></button>
+          <button onClick={nextMonth} className="p-1 hover:bg-white/10 rounded-lg text-neutral-500 hover:text-white transition-all"><ArrowRight size={14} /></button>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-7 gap-1">
+        {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map(d => (
+          <div key={d} className="text-[8px] font-black text-neutral-600 text-center py-2">{d}</div>
+        ))}
+        {Array.from({ length: startOffset }).map((_, i) => <div key={`empty-${i}`} />)}
+        {days.map(d => {
+          const active = isSelected(d);
+          return (
+            <button
+              key={d}
+              onClick={() => handleSelect(d)}
+              className={`text-[10px] font-bold py-2 rounded-lg transition-all
+                ${active 
+                  ? 'bg-brand-orange text-white shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
+                  : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}
+            >
+              {d}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
 export default function ActividadMapa() {
   const { authToken } = useAppContext();
 
@@ -209,8 +273,7 @@ export default function ActividadMapa() {
     setRouteData(null);
   }, []);
 
-  const onDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value;
+  const handleDateSelect = (newDate: string) => {
     setSelectedDate(newDate);
     if (vehSel) {
       fetchRoute(vehSel.id, newDate);
@@ -290,7 +353,7 @@ export default function ActividadMapa() {
             animate={{ opacity: 1 }}
             className="flex flex-col gap-4"
           >
-            <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
+            <div className="flex flex-wrap items-center justify-between gap-4 print:hidden pointer-events-auto relative z-[1000]">
                <button 
                 onClick={() => { setStep(1); setVehSel(null); setRouteData(null); }}
                 className="flex items-center gap-2 text-neutral-500 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] transition-colors"
@@ -299,24 +362,13 @@ export default function ActividadMapa() {
                </button>
                
                <div className="flex items-center gap-4 glass px-6 py-2 rounded-2xl border border-white/5">
-                  <div className="flex items-center gap-2 pr-4 border-r border-white/10">
-                    <Activity className="text-brand-orange" size={14} />
-                    <span className="text-[10px] font-black text-white uppercase tracking-wider">{vehSel?.placa}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Calendar className="text-neutral-500" size={14} />
-                    <input 
-                      type="date" 
-                      value={selectedDate}
-                      onChange={onDateChange}
-                      className="bg-transparent text-white text-[10px] font-bold outline-none cursor-pointer uppercase tracking-wider"
-                    />
-                  </div>
+                  <Activity className="text-brand-orange" size={14} />
+                  <span className="text-[10px] font-black text-white uppercase tracking-wider">{vehSel?.placa}</span>
                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <div className="lg:col-span-3 relative rounded-[40px] overflow-hidden border border-white/10 shadow-2xl h-[600px] bg-brand-dark-2 print:h-[800px] print:rounded-none print:border-none">
+              <div className="lg:col-span-3 relative rounded-[40px] overflow-hidden border border-white/10 shadow-2xl h-[700px] bg-brand-dark-2 print:h-[800px] print:rounded-none print:border-none">
                 {loadingRoute ? (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-4">
                     <Loader2 size={40} className="animate-spin text-brand-orange" />
@@ -328,7 +380,7 @@ export default function ActividadMapa() {
                        <Calendar size={32} className="text-brand-orange/40" />
                     </div>
                     <h3 className="text-xl font-bold text-white uppercase tracking-tight">Consultar Actividad</h3>
-                    <p className="text-neutral-500 text-sm max-w-xs">Por favor, selecciona una fecha en el panel superior para visualizar el recorrido del vehículo.</p>
+                    <p className="text-neutral-500 text-sm max-w-xs">Por favor, selecciona una fecha en el panel lateral para visualizar el recorrido del vehículo.</p>
                   </div>
                 ) : polylinePoints.length > 0 ? (
                   <MapContainer
@@ -359,10 +411,10 @@ export default function ActividadMapa() {
 
                     {/* Start/End Markers */}
                     <Marker position={polylinePoints[0]}>
-                      <Popup>Inicio de Ruta</Popup>
+                      <Popup className="tech-popup">Inicio de Ruta</Popup>
                     </Marker>
                     <Marker position={polylinePoints[polylinePoints.length - 1]}>
-                      <Popup>Fin de Ruta</Popup>
+                      <Popup className="tech-popup">Fin de Ruta</Popup>
                     </Marker>
 
                   </MapContainer>
@@ -387,7 +439,12 @@ export default function ActividadMapa() {
                 )}
               </div>
 
-              <div className="space-y-6 print:hidden">
+              <div className="space-y-6 print:hidden z-[1100] relative pointer-events-auto">
+                {/* CALENDAR GRID */}
+                <div className="glass p-6 rounded-[32px] border border-white/5">
+                  <CalendarGrid selectedDate={selectedDate} onSelect={handleDateSelect} />
+                </div>
+
                 <div className="glass p-6 rounded-[32px] border border-white/5 space-y-6">
                   <div className="flex items-center gap-3 border-b border-white/5 pb-4">
                     <Navigation className="text-brand-orange" size={18} />
