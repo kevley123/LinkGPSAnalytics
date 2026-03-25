@@ -12,7 +12,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { useAppContext } from '../context/AppContext';
-import logo from '../assets/logo_home.png';
 
 // --- Heatmap Layer Component ---
 const HeatmapLayer = memo(({ points }: { points: any[] }) => {
@@ -123,24 +122,19 @@ export default function Dashboard() {
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-black/40" />
       </div>
 
-      {/* ── Header Overlay (Solid Squared Black) ────────────────────────────── */}
-      <div className="absolute top-8 left-8 right-8 z-10 flex items-center justify-between">
+      {/* ── Header Overlay (Crystal Rounded Style) ─────────────────────────── */}
+      <div className="absolute top-10 left-10 right-10 z-10 flex items-center justify-between">
         <motion.div
           initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          className="bg-black/80 backdrop-blur-md border border-white/5 rounded-2xl pl-4 pr-12 py-4 shadow-2xl flex items-center gap-6"
+          className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] px-10 py-5 shadow-2xl flex flex-col"
         >
-          <div className="w-12 h-12 rounded-xl bg-brand-dark-3 flex items-center justify-center border border-white/10 p-2">
-            <img src={logo} alt="LinkGPS" className="w-full h-auto object-contain" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-xl font-black text-white uppercase tracking-tight leading-none">Bienvenido, {user?.name?.split(' ')[0] ?? 'Operator'}</h1>
-            <p className="text-brand-orange text-[10px] font-black uppercase tracking-[0.3em] mt-1">Mapa de calor de zonas rojas</p>
-          </div>
+          <h1 className="text-2xl font-black text-white uppercase tracking-tight leading-none">Bienvenido, {user?.name?.split(' ')[0] ?? 'Operator'}</h1>
+          <p className="text-brand-orange text-[10px] font-black uppercase tracking-[0.4em] mt-2">Mapa de calor de zonas rojas</p>
         </motion.div>
 
         <motion.div
           initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          className="bg-black/80 backdrop-blur-md border border-white/5 rounded-2xl px-10 py-5 shadow-2xl"
+          className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] px-12 py-6 shadow-2xl"
         >
           <DigitalClock />
         </motion.div>
