@@ -12,13 +12,13 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-const SIDEBAR_WIDTH_OPEN   = 240;
+const SIDEBAR_WIDTH_OPEN = 240;
 const SIDEBAR_WIDTH_CLOSED = 64;
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const location = useLocation();
   const { notifsCount, alertsCount } = useAppContext();
-  
+
   // Accordion state: track which sections are expanded
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Principal']));
 
@@ -32,11 +32,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const sections = SIDEBAR_LINKS.reduce<Record<string, typeof SIDEBAR_LINKS>>((acc, link) => {
     const sec = link.section ?? 'General';
     if (!acc[sec]) acc[sec] = [];
-    
+
     const linkWithBadge = { ...link };
     if (link.label === 'Notificaciones') linkWithBadge.badge = notifsCount;
     if (link.label === 'Alertas IA') linkWithBadge.badge = alertsCount;
-    
+
     acc[sec].push(linkWithBadge);
     return acc;
   }, {});
@@ -65,14 +65,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
       {/* Logo row */}
-      <div className="h-16 flex items-center px-4 border-b border-white/5 shrink-0 overflow-hidden">
+      <div className="h-20 flex items-center px-6 border-b border-white/5 shrink-0 overflow-hidden">
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
             <motion.img
               key="logo-full"
               src={logo}
               alt="LinkGPS"
-              className="h-6 shrink-0"
+              className="h-9 shrink-0 object-contain"
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -8 }}
@@ -81,14 +81,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           ) : (
             <motion.div
               key="logo-icon"
-              className="w-8 h-8 bg-brand-orange/10 border border-brand-orange/20 rounded-lg
+              className="w-10 h-10 bg-brand-orange border-2 border-white/10 rounded-xl
                          flex items-center justify-center shrink-0"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.15 }}
             >
-              <span className="text-brand-orange font-black text-xs">L</span>
+              <span className="text-black font-black text-sm">L</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -98,22 +98,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           {open && (
             <motion.button
               onClick={onClose}
-              className="ml-auto w-7 h-7 rounded-lg flex items-center justify-center
-                         text-neutral-500 hover:text-brand-orange hover:bg-brand-orange/10 transition-colors"
+              className="ml-auto w-8 h-8 rounded-xl flex items-center justify-center
+                         text-neutral-500 hover:text-brand-orange hover:bg-white/5 transition-colors"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               whileTap={{ scale: 0.9 }}
               aria-label="Collapse sidebar"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </motion.button>
           )}
         </AnimatePresence>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 flex flex-col gap-2 scrollbar-none">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 flex flex-col gap-2 scrollbar-none">
         {Object.entries(sections).map(([section, links]) => {
           const isExpanded = expandedSections.has(section);
           return (
@@ -122,14 +122,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               {open && (
                 <button
                   onClick={() => toggleSection(section)}
-                  className="px-4 py-2 flex items-center justify-between text-[10px] font-black text-neutral-600 uppercase tracking-[0.2em] hover:text-neutral-400 transition-colors group"
+                  className="px-6 py-3 flex items-center justify-between text-[11px] font-black text-white uppercase tracking-[0.25em] hover:text-brand-orange transition-colors group"
                 >
                   <span>{section}</span>
                   <motion.div
                     animate={{ rotate: isExpanded ? 0 : -90 }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="opacity-40 group-hover:opacity-100 transition-opacity"
                   >
-                    <ChevronLeft size={10} className="rotate-270" />
+                    <ChevronLeft size={12} className="rotate-270" />
                   </motion.div>
                 </button>
               )}
@@ -143,7 +143,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="flex flex-col gap-0.5 px-2 py-1">
+                    <div className="flex flex-col gap-1 px-3 py-1">
                       {links.map((link) => {
                         const active = isActive(link.href);
                         const Icon = link.icon;
@@ -152,26 +152,26 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                             key={link.href}
                             to={link.href}
                             className={clsx(
-                              'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 group',
+                              'relative flex items-center gap-4 px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-150 group',
                               active
-                                ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/10'
+                                ? 'bg-brand-orange text-white shadow-xl shadow-brand-orange/20'
                                 : 'text-neutral-500 hover:text-white hover:bg-white/5',
                             )}
                             title={!open ? link.label : undefined}
                           >
                             <div className="relative shrink-0">
-                              <Icon size={16} />
+                              <Icon size={18} strokeWidth={2.5} />
                               {link.isSpecial && (
-                                <span className="absolute -top-1 -right-1 flex h-1.5 w-1.5">
+                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-orange"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
                                 </span>
                               )}
                             </div>
 
                             {open && (
                               <motion.span
-                                className="truncate"
+                                className="truncate tracking-tight"
                                 initial={{ opacity: 0, x: -4 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.15 }}
@@ -227,7 +227,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             exit={{ opacity: 0 }}
           >
             <p className="text-[9px] font-black text-neutral-700 uppercase tracking-widest leading-relaxed">
-              LinkGPS<br />Intelligence Unit
+              LinkGPS<br />Modelo de ML
             </p>
           </motion.div>
         )}
