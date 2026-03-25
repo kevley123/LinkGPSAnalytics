@@ -19,19 +19,19 @@ const HeatmapLayer = memo(({ points }: { points: any[] }) => {
     
     // @ts-ignore
     const heat = L.heatLayer(
-      points.map(p => [p.lat, p.lon, p.intensity * 3]), // Multiplier for visibility
+      points.map(p => [p.lat, p.lon, (p.intensity || 0.5) * 5]), // Increased multiplier for stronger visual
       {
-        radius: 30,
-        blur: 20,
-        maxOpacity: 0.8,
-        minOpacity: 0.3,
+        radius: 40, // Larger radius for national view
+        blur: 25,
+        maxOpacity: 0.9,
+        minOpacity: 0.4,
         gradient: {
-            0.1: 'blue',
-            0.3: 'cyan',
-            0.5: 'green',
-            0.7: 'yellow',
-            0.9: 'orange',
-            1.0: 'red'
+            0.1: '#3B82F6', // Blue
+            0.3: '#06B6D4', // Cyan
+            0.5: '#10B981', // Green
+            0.7: '#FBBF24', // Yellow
+            0.9: '#F97316', // Orange
+            1.0: '#EF4444'  // Red
         }
       }
     ).addTo(map);
@@ -66,7 +66,7 @@ const DigitalClock = () => {
   );
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
 
 export default function Dashboard() {
   const { user, authToken } = useAppContext();
@@ -82,7 +82,7 @@ export default function Dashboard() {
     if (!authToken) return;
     const fetchGlobalRisk = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/analytics/mapa-principal`, {
+        const res = await fetch(`${API_BASE}/analytics/mapa-principal`, {
           headers: { 'Authorization': `Bearer ${authToken}`, 'Accept': 'application/json' },
         });
         if (!res.ok) throw new Error('Error fetching risk data');
