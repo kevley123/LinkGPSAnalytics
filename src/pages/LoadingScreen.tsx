@@ -2,9 +2,13 @@
 import { motion } from 'framer-motion';
 import logo from '../assets/logo_home.png';
 
-export default function LoadingScreen() {
+interface LoadingScreenProps {
+  message?: string;
+}
+
+export default function LoadingScreen({ message = 'Verificando sesión…' }: LoadingScreenProps) {
   return (
-    <div className="fixed inset-0 bg-brand-dark flex flex-col items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 bg-brand-dark flex flex-col items-center justify-center overflow-hidden z-[5000]">
       {/* Subtle radial glow background */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -49,12 +53,12 @@ export default function LoadingScreen() {
 
       {/* Label */}
       <motion.p
-        className="mt-12 text-neutral-400 text-sm tracking-widest uppercase font-medium"
+        className="mt-12 text-neutral-400 text-[10px] tracking-[0.2em] uppercase font-black"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.6 }}
       >
-        Verificando sesión…
+        {message}
       </motion.p>
 
       {/* Progress dots */}
