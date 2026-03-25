@@ -273,29 +273,47 @@ export default function Estadisticas() {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
               {[
-                { label: 'Recorrido Total', val: totals.dist.toFixed(1), unit: 'KM', icon: Ruler, color: 'text-blue-500' },
-                { label: 'Velocidad Promedio', val: totals.speed.toFixed(1), unit: 'KM/H', icon: Gauge, color: 'text-orange-500' },
-                { label: 'Vectores de Entrenamiento', val: totals.points.toLocaleString(), unit: 'PTS', icon: Zap, color: 'text-purple-500' },
+                { label: 'Recorrido Total', val: totals.dist.toFixed(1), unit: 'KM', icon: Ruler, color: 'text-blue-500', desc: 'Suma de kilómetros recorridos por la unidad en el periodo analizado.' },
+                { label: 'Velocidad Promedio', val: totals.speed.toFixed(1), unit: 'KM/H', icon: Gauge, color: 'text-orange-500', desc: 'Media de velocidad durante trayectos activos, ideal para medir eficiencia.' },
+                { label: 'Vectores de Entrenamiento', val: totals.points.toLocaleString(), unit: 'PTS', icon: Zap, color: 'text-purple-500', desc: 'Datos procesados por la IA para aprender los patrones de esta unidad.' },
               ].map((kpi, i) => (
                 <motion.div 
                   key={kpi.label}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="glass p-6 rounded-[32px] border border-white/5 flex items-center gap-5"
+                  className="glass p-6 rounded-[32px] border border-white/5 flex items-center gap-5 group relative"
                 >
                   <div className={`w-14 h-14 rounded-2xl bg-brand-dark-2 flex items-center justify-center border border-white/10 ${kpi.color}`}>
                     <kpi.icon size={28} />
                   </div>
-                  <div>
-                    <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-1">{kpi.label}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest truncate">{kpi.label}</p>
+                      <div className="relative group/tooltip">
+                        <Info size={10} className="text-neutral-700 cursor-help" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-brand-dark-2 border border-white/10 rounded-xl text-[10px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl">
+                          {kpi.desc}
+                        </div>
+                      </div>
+                    </div>
                     <p className="text-2xl font-black text-white">{kpi.val} <span className="text-xs text-neutral-600 font-bold ml-1">{kpi.unit}</span></p>
                   </div>
                 </motion.div>
               ))}
             </div>
+
+            {/* Scroll Indicator */}
+            <motion.div 
+              animate={{ y: [0, 5, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="flex flex-col items-center gap-2 py-4"
+            >
+              <span className="text-[8px] font-black text-brand-orange uppercase tracking-[0.3em]">Scroll para más</span>
+              <div className="w-1 h-8 rounded-full bg-gradient-to-b from-brand-orange to-transparent opacity-30" />
+            </motion.div>
 
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

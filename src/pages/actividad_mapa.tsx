@@ -149,8 +149,8 @@ export default function ActividadMapa() {
   const [loadingRoute, setLoadingRoute] = useState(false);
   const [errorModal, setErrorModal] = useState<string | null>(null);
 
-  // Configuration
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  // Configuration - No default date to avoid auto-fetch on empty days
+  const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
     if (!authToken) return;
@@ -173,8 +173,9 @@ export default function ActividadMapa() {
   }, [authToken]);
 
   const fetchRoute = useCallback(async (vehId: number, date: string) => {
-    if (!authToken || !vehId) return;
+    if (!authToken || !vehId || !date) return;
     setLoadingRoute(true);
+    setRouteData(null); // Clear previous
     try {
       const res = await fetch(`${API_BASE}/api/analytics/ruta-por-dia/${vehId}/${date}`, {
         headers: { 'Authorization': `Bearer ${authToken}`, 'Accept': 'application/json' },
@@ -184,13 +185,19 @@ export default function ActividadMapa() {
         setErrorModal('No tienes permiso para usar Analytics o no tienes un servicio activo.');
         return;
       }
+      
+      if (res.status === 404) {
+        setRouteData({ points: [], distance: 0, avg_speed: 0 }); // Explicit empty
+        return;
+      }
+
       if (!res.ok) throw new Error(`Error ${res.status}`);
 
       const data = await res.json();
       setRouteData(data);
-      setStep(2);
     } catch (e) {
       console.error('Fetch route error:', e);
+      setRouteData({ points: [], distance: 0, avg_speed: 0 });
     } finally {
       setLoadingRoute(false);
     }
@@ -198,8 +205,9 @@ export default function ActividadMapa() {
 
   const onSelectVehicle = useCallback((veh: any) => {
     setVehSel(veh);
-    fetchRoute(veh.id, selectedDate);
-  }, [fetchRoute, selectedDate]);
+    setStep(2); // Go to map but DON'T fetch yet
+    setRouteData(null);
+  }, []);
 
   const onDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
@@ -314,6 +322,14 @@ export default function ActividadMapa() {
                     <Loader2 size={40} className="animate-spin text-brand-orange" />
                     <p className="text-neutral-500 font-black text-xs uppercase tracking-widest">Reconstruyendo Trayectoria...</p>
                   </div>
+                ) : !selectedDate ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-center p-12">
+                    <div className="w-20 h-20 rounded-full bg-brand-orange/5 border border-brand-orange/10 flex items-center justify-center mb-2">
+                       <Calendar size={32} className="text-brand-orange/40" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white uppercase tracking-tight">Consultar Actividad</h3>
+                    <p className="text-neutral-500 text-sm max-w-xs">Por favor, selecciona una fecha en el panel superior para visualizar el recorrido del vehículo.</p>
+                  </div>
                 ) : polylinePoints.length > 0 ? (
                   <MapContainer
                     bounds={bounds || [[-16.48, -68.11], [-16.49, -68.12]]}
@@ -353,8 +369,8 @@ export default function ActividadMapa() {
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-center p-12">
                     <Activity size={60} className="text-neutral-800" />
-                    <h3 className="text-xl font-bold text-white">Sin Actividad Registrada</h3>
-                    <p className="text-neutral-500 text-sm max-w-xs">No se encontraron coordenadas para el {selectedDate} en este vehículo.</p>
+                    <h3 className="text-xl font-bold text-white">Sin registros para el día {selectedDate}</h3>
+                    <p className="text-neutral-500 text-sm max-w-xs">No se encontraron coordenadas o telemetría para esta unidad en la fecha seleccionada.</p>
                   </div>
                 )}
 

@@ -146,12 +146,12 @@ export default function MapaAnomalia() {
   const [loadingML, setLoadingML] = useState(false);
   const [errorModal, setErrorModal] = useState<string | null>(null);
 
-  // Heatmap Controls
+  // Heatmap Controls - New defaults as requested
   const [showNormal, setShowNormal] = useState(true);
   const [showAnomaly, setShowAnomaly] = useState(true);
-  const [radius, setRadius] = useState(25);
-  const [blur, setBlur] = useState(15);
-  const [intensity, setIntensity] = useState(0.8);
+  const [radius, setRadius] = useState(50);
+  const [blur, setBlur] = useState(8);
+  const [intensity, setIntensity] = useState(2.0);
 
   useEffect(() => {
     if (!authToken) return;
@@ -280,13 +280,25 @@ export default function MapaAnomalia() {
                     <span className="text-[10px] font-black text-white uppercase tracking-wider">{vehSel?.placa}</span>
                   </div>
                   <div className="flex items-center gap-6 shrink-0">
-                    <label className="flex items-center gap-2 cursor-pointer group">
+                    <label className="flex items-center gap-2 cursor-pointer group relative">
                       <input type="checkbox" checked={showNormal} onChange={e => setShowNormal(e.target.checked)} className="accent-blue-500" />
                       <span className="text-[10px] font-bold text-neutral-400 group-hover:text-blue-400 transition-colors uppercase">Zonas Regulares</span>
+                      <div className="relative group/tooltip">
+                        <Info size={10} className="text-neutral-700 cursor-help" />
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-brand-dark-2 border border-white/10 rounded-xl text-[10px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-[2000] shadow-2xl">
+                          Muestra los sectores donde el vehículo circula de manera habitual. Útil para identificar rutas frecuentes.
+                        </div>
+                      </div>
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer group">
+                    <label className="flex items-center gap-2 cursor-pointer group relative">
                       <input type="checkbox" checked={showAnomaly} onChange={e => setShowAnomaly(e.target.checked)} className="accent-red-500" />
                       <span className="text-[10px] font-bold text-neutral-400 group-hover:text-red-400 transition-colors uppercase">Anomalías Detectadas</span>
+                      <div className="relative group/tooltip">
+                        <Info size={10} className="text-neutral-700 cursor-help" />
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-brand-dark-2 border border-white/10 rounded-xl text-[10px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-[2000] shadow-2xl">
+                          Resalta comportamientos fuera del patrón aprendido (desvíos o paradas inusuales).
+                        </div>
+                      </div>
                     </label>
                   </div>
                </div>
@@ -363,28 +375,52 @@ export default function MapaAnomalia() {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="space-y-3">
+                    <div className="space-y-3 group relative">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Radio de Macha</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Radio de Macha</span>
+                          <div className="relative group/tooltip">
+                            <Info size={10} className="text-neutral-700 cursor-help" />
+                            <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-brand-dark-2 border border-white/10 rounded-xl text-[10px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-[2000]">
+                              Define el tamaño de cobertura de cada punto en el mapa.
+                            </div>
+                          </div>
+                        </div>
                         <span className="text-xs font-mono text-brand-orange">{radius}px</span>
                       </div>
-                      <input type="range" min="5" max="50" step="1" value={radius} onChange={e => setRadius(parseInt(e.target.value))} className="w-full accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity" />
+                      <input type="range" min="5" max="100" step="1" value={radius} onChange={e => setRadius(parseInt(e.target.value))} className="w-full accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity" />
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 group relative">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Desenfoque (Blur)</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Desenfoque (Blur)</span>
+                          <div className="relative group/tooltip">
+                            <Info size={10} className="text-neutral-700 cursor-help" />
+                            <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-brand-dark-2 border border-white/10 rounded-xl text-[10px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-[2000]">
+                              Suaviza los bordes para una visualización más orgánica o precisa.
+                            </div>
+                          </div>
+                        </div>
                         <span className="text-xs font-mono text-brand-orange">{blur}px</span>
                       </div>
-                      <input type="range" min="5" max="30" step="1" value={blur} onChange={e => setBlur(parseInt(e.target.value))} className="w-full accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity" />
+                      <input type="range" min="1" max="50" step="1" value={blur} onChange={e => setBlur(parseInt(e.target.value))} className="w-full accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity" />
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 group relative">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Intensidad ML</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Intensidad ML</span>
+                          <div className="relative group/tooltip">
+                            <Info size={10} className="text-neutral-700 cursor-help" />
+                            <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-brand-dark-2 border border-white/10 rounded-xl text-[10px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-[2000]">
+                              Multiplica la fuerza visual de los puntos de datos detectados.
+                            </div>
+                          </div>
+                        </div>
                         <span className="text-xs font-mono text-brand-orange">{intensity.toFixed(1)}</span>
                       </div>
-                      <input type="range" min="0.1" max="2" step="0.1" value={intensity} onChange={e => setIntensity(parseFloat(e.target.value))} className="w-full accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity" />
+                      <input type="range" min="0.1" max="5" step="0.1" value={intensity} onChange={e => setIntensity(parseFloat(e.target.value))} className="w-full accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 </div>
