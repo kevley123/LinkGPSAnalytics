@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Car, Loader2, ChevronLeft, AlertCircle,
   ArrowRight, Activity, Map as MapIcon, Layers,
-  Search, ShieldCheck, Target
+  Search, ShieldCheck, Target, Zap
 } from 'lucide-react';
 import {
   MapContainer, TileLayer, useMap, Marker, Popup, Circle
@@ -68,6 +69,79 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
   </button>
 ));
 
+// ── Analysis Mode Selector Modal ─────────────────────────────────────────────
+const ModalSelectorAnalisis = memo(({ isOpen, onClose, onSelect }: any) => {
+  if (!isOpen) return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-brand-dark/95 backdrop-blur-xl"
+        onClick={onClose}
+      />
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        className="relative w-full max-w-3xl bg-brand-dark-2 rounded-[40px] border border-white/10 shadow-2xl p-8 md:p-12"
+      >
+        <div className="text-center mb-10">
+           <h3 className="text-3xl font-black text-white uppercase tracking-tight mb-2">Selección de Inteligencia</h3>
+           <p className="text-neutral-500 text-xs font-bold uppercase tracking-[0.2em]">Seleccione el tipo de análisis geoespacial para procesar</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <button 
+             onClick={() => onSelect('HEATMAP')}
+             className="group relative p-8 rounded-[32px] bg-brand-dark-3 border border-white/5 hover:border-brand-orange/40 hover:bg-brand-orange/5 transition-all text-left flex flex-col items-center text-center gap-6 overflow-hidden"
+           >
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                 <Layers size={120} className="text-brand-orange" />
+              </div>
+              <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20 text-brand-orange group-hover:scale-110 transition-transform">
+                <Layers size={32} />
+              </div>
+              <div>
+                <h4 className="text-xl font-black text-white mb-3">Zonas Habituales</h4>
+                <p className="text-[11px] text-neutral-400 leading-relaxed">
+                  Mapa de calor de densidad acumulada. Identifica los sectores con mayor tiempo de permanencia mediante gradientes térmicos.
+                </p>
+              </div>
+              <div className="mt-auto px-6 py-2 rounded-full bg-white/5 group-hover:bg-brand-orange text-[9px] font-black text-neutral-500 group-hover:text-white uppercase tracking-widest transition-colors">
+                Generar Heatmap
+              </div>
+           </button>
+
+           <button 
+             onClick={() => onSelect('CLUSTERS')}
+             className="group relative p-8 rounded-[32px] bg-brand-dark-3 border border-white/5 hover:border-brand-orange/40 hover:bg-brand-orange/5 transition-all text-left flex flex-col items-center text-center gap-6 overflow-hidden"
+           >
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                 <Target size={120} className="text-brand-orange" />
+              </div>
+              <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20 text-brand-orange group-hover:scale-110 transition-transform">
+                <Target size={32} />
+              </div>
+              <div>
+                <h4 className="text-xl font-black text-white mb-3">Paradas Frecuentes</h4>
+                <p className="text-[11px] text-neutral-400 leading-relaxed">
+                  Identifica clústeres discretos (Bases/Clientes) con cálculo de radio de influencia y densidad de observaciones.
+                </p>
+              </div>
+              <div className="mt-auto px-6 py-2 rounded-full bg-white/5 group-hover:bg-brand-orange text-[9px] font-black text-neutral-500 group-hover:text-white uppercase tracking-widest transition-colors">
+                Identificar Clústeres
+              </div>
+           </button>
+        </div>
+
+        <button onClick={onClose} className="mt-10 w-full text-center text-neutral-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">
+           Cancelar Selección
+        </button>
+      </motion.div>
+    </div>,
+    document.body
+  );
+});
+
 export default function RutasFrecuentes() {
   const { authToken } = useAppContext();
 
@@ -82,6 +156,7 @@ export default function RutasFrecuentes() {
   const [dataHeatmap, setDataHeatmap] = useState<any>(null);
   const [dataClusters, setDataClusters] = useState<any>(null);
   const [errorHeader, setErrorHeader] = useState<string | null>(null);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
 
   useEffect(() => {
     if (!authToken) return;
@@ -103,30 +178,31 @@ export default function RutasFrecuentes() {
     fetchVehicles();
   }, [authToken]);
 
-  const fetchAnalytics = useCallback(async (vehId: number) => {
+  const fetchAnalytics = useCallback(async (vehId: number, targetMode: 'HEATMAP' | 'CLUSTERS') => {
     if (!authToken || !vehId) return;
     setLoading(true);
+    setMode(targetMode);
     setErrorHeader(null);
+    setShowChoiceModal(false);
+    
     try {
-      // Fetch both for seamless switching? No, fetch on demand but let's do initial load for HEATMAP
-      const resH = await fetch(`${API_BASE}/api/analytics/mapa-clusterin/${vehId}`, {
+      const endpoint = targetMode === 'HEATMAP' 
+        ? `${API_BASE}/api/analytics/mapa-clusterin/${vehId}`
+        : `${API_BASE}/api/analytics/paradas-frecuentes/${vehId}`;
+
+      const res = await fetch(endpoint, {
         headers: { 'Authorization': `Bearer ${authToken}`, 'Accept': 'application/json' },
       });
-      if (resH.status === 403) {
+
+      if (res.status === 403) {
         setErrorHeader('Servicio Analytics no activo o restringido para esta unidad.');
-        setStep(1);
         return;
       }
-      if (!resH.ok) throw new Error("Error loading Habitual Zones");
-      const hData = await resH.json();
-      setDataHeatmap(hData);
-
-      const resC = await fetch(`${API_BASE}/api/analytics/paradas-frecuentes/${vehId}`, {
-        headers: { 'Authorization': `Bearer ${authToken}`, 'Accept': 'application/json' },
-      });
-      if (!resC.ok) throw new Error("Error loading Stop Clusters");
-      const cData = await resC.json();
-      setDataClusters(cData);
+      if (!res.ok) throw new Error("Error loading Analytics Data");
+      
+      const resJson = await res.json();
+      if (targetMode === 'HEATMAP') setDataHeatmap(resJson);
+      else setDataClusters(resJson);
 
       setStep(2);
     } catch (e) {
@@ -139,7 +215,7 @@ export default function RutasFrecuentes() {
 
   const onSelectVehicle = (veh: any) => {
     setVehSel(veh);
-    fetchAnalytics(veh.id);
+    setShowChoiceModal(true);
   };
 
   if (loading) return <LoadingScreen message={`Identificando patrones para ${vehSel?.placa}...`} />;
@@ -208,8 +284,45 @@ export default function RutasFrecuentes() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-6"
           >
+            {/* Mode Explanation Card */}
+            <motion.div 
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="bg-brand-dark-3 border border-white/10 rounded-[40px] p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl relative overflow-hidden"
+            >
+               <div className="absolute top-0 right-0 p-8 opacity-5">
+                  {mode === 'HEATMAP' ? <Layers size={140} className="text-brand-orange" /> : <Target size={140} className="text-brand-orange" />}
+               </div>
+               <div className="w-20 h-20 rounded-3xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20 shrink-0 shadow-lg shadow-brand-orange/5 relative z-10">
+                  {mode === 'HEATMAP' ? <Layers className="text-brand-orange" size={40} /> : <Target className="text-brand-orange" size={40} />}
+               </div>
+               <div className="flex-1 text-center md:text-left relative z-10">
+                  <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
+                    <span className="px-3 py-1 rounded-full bg-brand-orange text-[9px] font-black text-white uppercase tracking-[0.2em]">IA Engine</span>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+                       {mode === 'HEATMAP' ? 'Zonas Habituales' : 'Paradas Frecuentes'}
+                    </h2>
+                  </div>
+                  <p className="text-neutral-400 text-sm font-medium leading-relaxed max-w-2xl">
+                     {mode === 'HEATMAP' 
+                       ? 'Este mapa de calor procesa el histórico completo de permanencia del vehículo para resaltar sectores con mayor recurrencia. Los tonos verdes profundos indican la zona de "estancia" con mayor peso operativo.'
+                       : 'Utilizando el algoritmo de clustering LinkGPS, el sistema ha detectado núcleos de detención prolongada. Los clusters en naranja representan puntos neurálgicos (Bases) mientras que los verdes son paradas secundarias.'}
+                  </p>
+               </div>
+               <div className="hidden lg:flex items-center gap-3 bg-brand-orange/5 px-6 py-3 rounded-2xl border border-brand-orange/10 relative z-10">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-brand-orange rounded-full animate-ping opacity-20" />
+                    <Zap size={18} className="text-brand-orange relative" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] font-black text-white uppercase tracking-wider">Análisis Activo</p>
+                    <p className="text-[9px] text-brand-orange font-bold uppercase tracking-tight">Vectores ML</p>
+                  </div>
+               </div>
+            </motion.div>
+
             {/* Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-4">
                <button 
@@ -383,7 +496,11 @@ export default function RutasFrecuentes() {
       </div>
 
       <AnimatePresence>
-         {/* Could add generic error modala here if needed */}
+         <ModalSelectorAnalisis 
+           isOpen={showChoiceModal} 
+           onClose={() => setShowChoiceModal(false)} 
+           onSelect={(m: 'HEATMAP' | 'CLUSTERS') => fetchAnalytics(vehSel?.id, m)}
+         />
       </AnimatePresence>
 
       <style>{`
