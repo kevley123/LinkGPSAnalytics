@@ -14,7 +14,26 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 // @ts-ignore
-import { AntPath } from 'react-leaflet-ant-path';
+import { antPath } from 'leaflet-ant-path';
+
+// ── Custom AntPath Component (Native Leaflet) ────────────────────────────────
+const AntPath = ({ positions, options }: { positions: any[]; options: any }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !positions || positions.length === 0) return;
+
+    // @ts-ignore
+    const path = antPath(positions, options);
+    path.addTo(map);
+
+    return () => {
+      map.removeLayer(path);
+    };
+  }, [map, positions, JSON.stringify(options)]);
+
+  return null;
+};
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
