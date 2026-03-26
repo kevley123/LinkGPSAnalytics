@@ -24,7 +24,7 @@ export default function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
   const isActive = (href: string) => location.pathname === href;
 
   return (
-    <header className="bg-black/80 backdrop-blur-md border-b border-white/5 h-16 flex items-center px-4 gap-4 sticky top-0 z-40">
+    <header className="bg-white/5 backdrop-blur-2xl border-b border-white/10 h-16 flex items-center px-6 gap-4 sticky top-0 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
       {/* Sidebar toggle */}
       <motion.button
         onClick={onToggleSidebar}

@@ -425,11 +425,15 @@ export default function MapaVivo() {
             </AnimatePresence>
 
             <style>{`
-        .leaflet-container { background: #0a0a0a !important; }
-        .leaflet-popup-content-wrapper { background: white; border-radius: 12px; font-family: inherit; }
-        .leaflet-popup-tip { background: white; }
-        .leaflet-control-layers { background: #121212 !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; border-radius: 12px !important; }
-        .leaflet-control-layers-list { padding: 8px; }
+                .silver-map-container .leaflet-tile-pane {
+                    filter: grayscale(100%) brightness(0.6) contrast(1.4);
+                }
+                .silver-map-container .leaflet-container {
+                    background: #111 !important;
+                }
+                .leaflet-popup-content-wrapper { background: white; border-radius: 12px; }
+                .leaflet-control-layers { background: rgba(0,0,0,0.8) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; border-radius: 12px !important; backdrop-filter: blur(8px); }
+                .leaflet-control-layers-list { padding: 8px; }
       `}</style>
         </div>
     );

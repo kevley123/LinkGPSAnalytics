@@ -70,7 +70,7 @@ export default function Notifications() {
         });
         if (!res.ok) throw new Error('API Error');
         const data = await res.json();
-        
+
         if (isMounted) {
           const arr = Array.isArray(data) ? data : (data?.notificaciones ?? data?.data ?? []);
           setNotifsCount(data?.meta?.total_items || arr.length);
@@ -94,7 +94,7 @@ export default function Notifications() {
       <div className="max-w-7xl mx-auto">
         {/* Header (Minimal Style) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 px-2">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-4"
           >
@@ -114,7 +114,7 @@ export default function Notifications() {
             href="https://link-gps-frontend.vercel.app/user/dashboard/notificaciones"
             className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-brand-orange text-white text-xs font-bold shadow-lg hover:bg-brand-orange/90 transition-all active:scale-95"
           >
-            Gestión Integral
+            Ver más
             <ExternalLink className="w-3.5 h-3.5" />
           </motion.a>
         </div>
@@ -147,22 +147,22 @@ export default function Notifications() {
                 const info = getTipoInfo(n.tipo);
                 const isUnread = n.leido === 'noleido';
                 return (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
-                    key={n.id} 
+                    key={n.id}
                     className={`p-3 px-6 flex gap-4 hover:bg-white/5 transition-all cursor-default relative overflow-hidden group
                       ${isUnread ? 'bg-brand-orange/[0.02]' : ''}`}
                   >
                     {isUnread && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-orange shadow-[0_0_15px_rgba(249,115,22,0.6)]" />
                     )}
-                    
+
                     <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border ${info.bg} ${info.border} transition-transform group-hover:scale-110`}>
                       <info.Icon className={`w-5 h-5 ${info.color}`} />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-4">
                         <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${info.color}`}>
@@ -182,7 +182,7 @@ export default function Notifications() {
                     </div>
 
                     <div className="opacity-0 group-hover:opacity-100 flex items-center gap-2 transition-opacity">
-                       <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
                     </div>
                   </motion.div>
                 );
