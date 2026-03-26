@@ -64,25 +64,24 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
         type="button"
         onClick={() => !loading && onSelect(veh)}
         disabled={loading}
-        className={`group relative w-full text-left flex items-center gap-3 px-4 py-4 rounded-2xl border transition-all duration-200
+        className={`group relative w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200
       ${selected
-                ? 'border-brand-orange bg-brand-orange/10 shadow-[0_0_20px_-5px_rgba(249,115,22,0.3)]'
-                : 'border-white/5 bg-brand-dark-3 hover:border-white/20'
+                ? 'border-brand-orange bg-brand-orange/10 shadow-[0_0_15px_-5px_rgba(249,115,22,0.3)]'
+                : 'border-white/5 bg-white/5 hover:border-white/10'
             } ${loading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
     >
-        <div className="w-12 h-12 rounded-xl bg-brand-dark-2 flex items-center justify-center border border-white/5">
-            <Car className={selected ? 'text-brand-orange' : 'text-neutral-500'} size={22} />
+        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5">
+            <Car className={selected ? 'text-brand-orange' : 'text-neutral-600'} size={18} />
         </div>
         <div className="flex-1 min-w-0">
-            <p className="font-bold text-white truncate">{veh.modelo}</p>
-            <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] font-black text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded uppercase tracking-wider">{veh.placa}</span>
-                <span className="text-[10px] text-neutral-500 capitalize">{veh.color || 'N/A'}</span>
+            <p className="text-sm font-black text-white truncate uppercase tracking-tight">{veh.modelo}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[9px] font-black text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded uppercase tracking-widest">{veh.placa}</span>
             </div>
         </div>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all
       ${selected ? 'bg-brand-orange text-white' : 'bg-white/5 text-neutral-600'}`}>
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
         </div>
     </button>
 ));
@@ -92,42 +91,41 @@ const InfoPanel = memo(({ veh, location, onRefresh, loading }: any) => (
     <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="glass p-5 rounded-3xl border border-white/10 space-y-4 shadow-2xl"
+        className="bg-white/5 backdrop-blur-2xl border border-white/10 p-4 rounded-[28px] space-y-3 shadow-3xl"
     >
         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-orange/20 flex items-center justify-center border border-brand-orange/30">
-                <Signal className="text-brand-orange animate-pulse" size={18} />
+            <div className="w-9 h-9 rounded-xl bg-brand-orange/20 flex items-center justify-center border border-brand-orange/30">
+                <Signal className="text-brand-orange animate-pulse" size={16} />
             </div>
             <div className="flex-1">
-                <p className="text-[10px] text-neutral-500 uppercase font-black tracking-widest">Estado de Unidad</p>
-                <p className="text-base font-bold text-white">{veh?.modelo} <span className="text-brand-orange ml-1 text-sm">[{veh?.placa}]</span></p>
+                <p className="text-[9px] text-neutral-500 uppercase font-black tracking-widest">Sistema Live</p>
+                <p className="text-sm font-black text-white uppercase tracking-tight leading-none">{veh?.modelo}</p>
             </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
             {[
-                { label: 'Latitud', val: location?.latitud ? parseFloat(location.latitud).toFixed(6) : '—' },
-                { label: 'Longitud', val: location?.longitud ? parseFloat(location.longitud).toFixed(6) : '—' },
+                { label: 'LAT', val: location?.latitud ? parseFloat(location.latitud).toFixed(5) : '—' },
+                { label: 'LON', val: location?.longitud ? parseFloat(location.longitud).toFixed(5) : '—' },
             ].map(({ label, val }) => (
-                <div key={label} className="bg-brand-dark-2 rounded-2xl px-4 py-3 border border-white/5">
-                    <p className="text-[9px] font-black text-neutral-500 uppercase tracking-widest mb-1">{label}</p>
-                    <p className="text-sm font-mono font-bold text-white">{val}</p>
+                <div key={label} className="bg-black/40 rounded-xl px-3 py-2 border border-white/5">
+                    <p className="text-[8px] font-black text-neutral-600 uppercase tracking-widest mb-0.5">{label}</p>
+                    <p className="text-[11px] font-mono font-bold text-white">{val}</p>
                 </div>
             ))}
         </div>
 
-        <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+        <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-4">
             <div className="flex flex-col">
-                <span className="text-[9px] text-neutral-500 uppercase font-bold">Último contacto</span>
-                <span className="text-xs text-white/80 font-medium">{fmtFullDate(location?.fecha)}</span>
+                <span className="text-[8px] text-neutral-600 uppercase font-black tracking-tighter">Último contacto</span>
+                <span className="text-[10px] text-white/60 font-medium uppercase">{fmtFullDate(location?.fecha)}</span>
             </div>
             <button
                 onClick={onRefresh}
                 disabled={loading}
-                className="px-4 py-2 rounded-xl bg-brand-orange/10 text-brand-orange text-xs font-black uppercase tracking-widest hover:bg-brand-orange/20 transition-all flex items-center gap-2"
+                className="w-8 h-8 rounded-lg bg-brand-orange text-white flex items-center justify-center hover:bg-brand-orange-light transition-all shadow-lg active:scale-90"
             >
-                <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-                Sync
+                <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             </button>
         </div>
     </motion.div>
@@ -260,25 +258,25 @@ export default function MapaVivo() {
     const hasCoords = lat !== null && lng !== null;
 
     return (
-        <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto min-h-screen">
+        <div className="p-3 md:p-4 text-white min-h-screen max-w-7xl mx-auto flex flex-col gap-4">
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-wrap items-end justify-between gap-4"
+                className="flex items-center justify-between gap-4 px-2"
             >
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-2xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
-                            <MapPin className="text-brand-orange" size={20} />
-                        </div>
-                        <h1 className="text-3xl font-black text-white tracking-tight">Mapa en vivo</h1>
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
+                        <MapPin className="text-brand-orange" size={20} />
                     </div>
-                    <p className="text-neutral-500 text-sm font-medium">Seguimiento geoespacial de flotas con analíticas integradas.</p>
+                    <div>
+                        <h1 className="text-2xl font-black text-white tracking-tight leading-none">Mapa en vivo</h1>
+                        <p className="text-xs font-medium text-neutral-500 mt-1.5">Seguimiento geoespacial de flotas en tiempo real</p>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-1 bg-brand-dark-3 p-1.5 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-1 bg-white/5 backdrop-blur-md p-1 rounded-xl border border-white/5">
                     {[1, 2].map((s) => (
-                        <div key={s} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${step === s ? 'bg-brand-orange text-white' : 'text-neutral-600'
+                        <div key={s} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${step === s ? 'bg-brand-orange text-white' : 'text-neutral-500'
                             }`}>
                             Step {s}
                         </div>
@@ -286,20 +284,20 @@ export default function MapaVivo() {
                 </div>
             </motion.div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="flex-1 min-h-0 flex flex-col gap-4">
                 {step === 1 ? (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 overflow-y-auto pr-2 scrollbar-none"
                     >
                         {loadingVeh ? (
-                            [1, 2, 3].map(i => <div key={i} className="h-24 rounded-2xl bg-brand-dark-3 animate-pulse border border-white/5" />)
+                            [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-20 rounded-2xl bg-white/5 animate-pulse border border-white/5" />)
                         ) : vehicles.length === 0 ? (
-                            <div className="col-span-full py-20 text-center glass rounded-[40px] border-white/5">
-                                <Car className="mx-auto text-neutral-800 mb-4" size={60} />
-                                <h3 className="text-xl font-bold text-white mb-2">Sin Unidades Disponibles</h3>
-                                <p className="text-neutral-500 text-sm">No hemos detectado vehículos vinculados a tu cuenta de Analytics.</p>
+                            <div className="col-span-full py-20 text-center bg-white/5 rounded-[40px] border border-white/5">
+                                <Car className="mx-auto text-neutral-800 mb-4" size={50} />
+                                <h3 className="text-lg font-black text-white uppercase tracking-widest">Sin Unidades</h3>
+                                <p className="text-neutral-500 text-xs">No hay vehículos vinculados.</p>
                             </div>
                         ) : (
                             vehicles.map(v => (
@@ -317,33 +315,33 @@ export default function MapaVivo() {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="flex flex-col gap-4"
+                        className="flex-1 flex flex-col gap-3 min-h-0"
                     >
                         <div className="flex items-center justify-between">
                             <button
                                 onClick={() => { setStep(1); setVehSel(null); setLocation(null); }}
-                                className="flex items-center gap-2 text-neutral-500 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] transition-colors"
+                                className="flex items-center gap-2 text-neutral-500 hover:text-white font-black text-[9px] uppercase tracking-[0.2em] transition-colors"
                             >
-                                <ChevronLeft size={16} /> Volver a selección
+                                <ChevronLeft size={14} /> Volver
                             </button>
-                            <div className="flex items-center gap-3">
-                                <div className="flex -space-x-2">
-                                    {vehicles.slice(0, 3).map(v => (
+                            <div className="flex items-center gap-2">
+                                <div className="flex -space-x-1.5">
+                                    {vehicles.slice(0, 5).map(v => (
                                         <button
                                             key={v.id}
                                             onClick={() => onSelectVehicle(v)}
-                                            className={`w-8 h-8 rounded-full border-2 border-brand-dark flex items-center justify-center transition-transform hover:scale-110 ${vehSel?.id === v.id ? 'bg-brand-orange text-white' : 'bg-brand-dark-3 text-neutral-500'
+                                            className={`w-7 h-7 rounded-full border border-black flex items-center justify-center transition-transform hover:scale-110 ${vehSel?.id === v.id ? 'bg-brand-orange text-white' : 'bg-white/5 text-neutral-500 shadow-xl'
                                                 }`}
                                         >
-                                            <Car size={12} />
+                                            <Car size={10} />
                                         </button>
                                     ))}
                                 </div>
-                                {vehicles.length > 3 && <span className="text-[10px] text-neutral-600 font-bold">+{vehicles.length - 3}</span>}
+                                {vehicles.length > 5 && <span className="text-[9px] text-neutral-600 font-bold">+{vehicles.length - 5}</span>}
                             </div>
                         </div>
 
-                        <div className="relative rounded-[40px] overflow-hidden border border-white/10 shadow-2xl h-[600px] bg-brand-dark-2">
+                        <div className="relative flex-1 rounded-[32px] overflow-hidden border border-white/10 shadow-3xl bg-[#111] silver-map-container">
                             {hasCoords ? (
                                 <MapContainer
                                     center={[lat, lng]}
@@ -352,15 +350,14 @@ export default function MapaVivo() {
                                     zoomControl={false}
                                 >
                                     <TileLayer
-                                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
                                     />
 
                                     <LayersControl position="topright">
-                                        <LayersControl.BaseLayer checked name="Deep Dark">
-                                            <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+                                        <LayersControl.BaseLayer checked name="Tactical View">
+                                            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png" />
                                         </LayersControl.BaseLayer>
-                                        <LayersControl.BaseLayer name="High Quality Satellite">
+                                        <LayersControl.BaseLayer name="Real Imagery">
                                             <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
                                         </LayersControl.BaseLayer>
                                     </LayersControl>
@@ -369,7 +366,7 @@ export default function MapaVivo() {
 
                                     <Circle
                                         center={[lat, lng]}
-                                        radius={100}
+                                        radius={80}
                                         pathOptions={{ color: '#F97316', fillColor: '#F97316', fillOpacity: 0.1, weight: 1 }}
                                     />
 
@@ -383,22 +380,15 @@ export default function MapaVivo() {
                                     </Marker>
                                 </MapContainer>
                             ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-                                    <Loader2 size={40} className="animate-spin text-brand-orange" />
-                                    <p className="text-neutral-500 font-black text-xs uppercase tracking-widest">Calculando Vectores de Posición...</p>
+                                <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                                    <Loader2 size={32} className="animate-spin text-brand-orange/50" />
+                                    <p className="text-neutral-600 font-black text-[10px] uppercase tracking-widest">Sincronizando Telemétrica...</p>
                                 </div>
                             )}
 
-                            {/* Float UI */}
-                            <div className="absolute top-6 right-6 z-[1000] flex flex-col gap-2">
-                                <div className="bg-brand-orange text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                    LIVE STREAMING
-                                </div>
-                            </div>
-
+                            {/* Info Overlay (Compact) */}
                             {hasCoords && (
-                                <div className="absolute bottom-6 left-6 z-[1000] w-full max-w-xs">
+                                <div className="absolute bottom-4 left-4 z-[1000] w-64">
                                     <InfoPanel
                                         veh={vehSel}
                                         location={location}
@@ -407,6 +397,14 @@ export default function MapaVivo() {
                                     />
                                 </div>
                             )}
+
+                            {/* Live Badge */}
+                            <div className="absolute top-4 right-14 z-[1000]">
+                                <div className="bg-brand-orange text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                    LIVE
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 )}

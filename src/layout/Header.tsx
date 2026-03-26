@@ -17,15 +17,19 @@ export default function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
 
+  const isDashboard = location.pathname.startsWith('/dashboard') || 
+                      location.pathname.startsWith('/analytics') ||
+                      location.pathname === '/mapa-vivo' ||
+                      location.pathname === '/notificaciones';
   const isActive = (href: string) => location.pathname === href;
 
   return (
-    <header className="glass border-b border-brand-dark-4/60 h-16 flex items-center px-4 gap-4 sticky top-0 z-40">
+    <header className="bg-black/80 backdrop-blur-md border-b border-white/5 h-16 flex items-center px-4 gap-4 sticky top-0 z-40">
       {/* Sidebar toggle */}
       <motion.button
         onClick={onToggleSidebar}
-        className="w-9 h-9 rounded-lg flex items-center justify-center text-neutral-400
-                   hover:text-brand-orange hover:bg-brand-orange/10 transition-colors"
+        className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-400
+                   hover:text-white hover:bg-white/5 transition-all border border-transparent hover:border-white/10"
         whileTap={{ scale: 0.9 }}
         aria-label="Toggle sidebar"
       >
@@ -42,22 +46,24 @@ export default function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
         </AnimatePresence>
       </motion.button>
 
-      {/* Logo */}
-      <Link to="/home" className="shrink-0">
-        <img src={logo} alt="LinkGPS Analytics" className="h-6" />
-      </Link>
+      {/* Logo (Hidden on Dashboard to avoid duplication with Sidebar) */}
+      {!isDashboard && (
+        <Link to="/home" className="shrink-0 ml-2">
+          <img src={logo} alt="LinkGPS" className="h-6" />
+        </Link>
+      )}
 
-      {/* Nav links (hidden on small) */}
-      <nav className="hidden lg:flex items-center gap-6 ml-4">
+      {/* Nav links (Crystal Style) */}
+      <nav className="hidden lg:flex items-center gap-3 ml-4">
         {NAV_LINKS.map((link) => (
           <a
             key={link.label}
             href={link.href}
-            className={`text-xs font-medium transition-colors ${
-              isActive(link.href)
-                ? 'text-brand-orange'
-                : 'text-neutral-400 hover:text-white'
-            }`}
+            className={`px-4 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border
+              ${isActive(link.href)
+                ? 'bg-brand-orange text-white border-brand-orange shadow-lg shadow-brand-orange/20'
+                : 'bg-white/5 text-neutral-400 border-white/5 hover:border-white/20 hover:text-white backdrop-blur-xl'
+              }`}
           >
             {link.label}
           </a>
@@ -70,18 +76,18 @@ export default function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
       {/* Notifications Popover */}
       <NotificationsPopover />
 
-      {/* User menu */}
+      {/* User menu (Crystal Style) */}
       <div className="relative">
         <motion.button
           onClick={() => setUserMenuOpen((v) => !v)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl
-                     text-neutral-300 hover:text-white hover:bg-brand-dark-3 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 backdrop-blur-xl border border-white/10
+                     text-neutral-300 hover:text-white hover:border-white/20 transition-all shadow-xl"
           whileTap={{ scale: 0.97 }}
         >
-          <div className="w-7 h-7 rounded-lg bg-brand-orange/20 border border-brand-orange/30 flex items-center justify-center">
+          <div className="w-7 h-7 rounded-lg bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center">
             <User className="w-4 h-4 text-brand-orange" />
           </div>
-          <span className="hidden sm:block text-xs font-medium truncate max-w-[100px]">
+          <span className="hidden sm:block text-[11px] font-black uppercase tracking-widest truncate max-w-[100px]">
             {user?.name ?? 'Usuario'}
           </span>
         </motion.button>

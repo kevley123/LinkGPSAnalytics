@@ -92,19 +92,19 @@ export default function Notifications() {
   return (
     <div className="p-4 md:p-6 text-white min-h-full">
       <div className="max-w-7xl mx-auto">
-        {/* Header (Crystal Style) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        {/* Header (Minimal Style) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 px-2">
           <motion.div 
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-5 py-3 shadow-xl"
+            className="flex items-center gap-4"
           >
-            <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
-              <Bell className="text-brand-orange w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
+              <Bell className="text-brand-orange w-5.5 h-5.5" />
             </div>
             <div>
-              <h1 className="text-xl font-black uppercase tracking-tight leading-none">Notificaciones</h1>
-              <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mt-1">
-                {unreadCount > 0 ? `Tienes ${unreadCount} alertas nuevas.` : 'Bandeja al día.'}
+              <h1 className="text-2xl font-black text-white tracking-tight leading-none">Notificaciones</h1>
+              <p className="text-xs font-medium text-neutral-500 mt-1.5">
+                {unreadCount > 0 ? `Tienes ${unreadCount} alertas nuevas sin revisar.` : 'Bandeja de eventos al día.'}
               </p>
             </div>
           </motion.div>
@@ -112,7 +112,7 @@ export default function Notifications() {
           <motion.a
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
             href="https://link-gps-frontend.vercel.app/user/dashboard/notificaciones"
-            className="flex items-center justify-center gap-2 px-6 py-2 rounded-xl bg-brand-orange text-white text-xs font-black uppercase tracking-widest shadow-lg hover:bg-brand-orange/90 transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-brand-orange text-white text-xs font-bold shadow-lg hover:bg-brand-orange/90 transition-all active:scale-95"
           >
             Gestión Integral
             <ExternalLink className="w-3.5 h-3.5" />
