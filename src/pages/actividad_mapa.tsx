@@ -50,31 +50,30 @@ const ViewUpdater = ({ bounds }: { bounds: L.LatLngBoundsExpression | null }) =>
   return null;
 };
 
-// ── Vehicle Selection Chip ───────────────────────────────────────────────────
+// ── Vehicle Selection Chip (Shrunken) ─────────────────────────────────────────
 const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
   <button
     type="button"
     onClick={() => !loading && onSelect(veh)}
     disabled={loading}
-    className={`group relative w-full text-left flex items-center gap-3 px-4 py-4 rounded-2xl border transition-all duration-200
+    className={`group relative w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200
       ${selected
-        ? 'border-brand-orange bg-brand-orange/10 shadow-[0_0_20px_-5px_rgba(249,115,22,0.3)]'
-        : 'border-white/5 bg-brand-dark-3 hover:border-white/20'
+        ? 'border-brand-orange bg-brand-orange/10 shadow-[0_0_15px_-5px_rgba(249,115,22,0.3)]'
+        : 'border-white/5 bg-white/5 hover:border-white/10'
       } ${loading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
   >
-    <div className="w-12 h-12 rounded-xl bg-brand-dark-2 flex items-center justify-center border border-white/5">
-      <Car className={selected ? 'text-brand-orange' : 'text-neutral-500'} size={22} />
+    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5">
+      <Car className={selected ? 'text-brand-orange' : 'text-neutral-600'} size={18} />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="font-bold text-white truncate">{veh.modelo}</p>
-      <div className="flex items-center gap-2 mt-1">
-        <span className="text-[10px] font-black text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded uppercase tracking-wider">{veh.placa}</span>
-        <span className="text-[10px] text-neutral-500 capitalize">{veh.color || 'N/A'}</span>
+      <p className="text-sm font-black text-white truncate uppercase tracking-tight">{veh.modelo}</p>
+      <div className="flex items-center gap-2 mt-0.5">
+        <span className="text-[9px] font-black text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded uppercase tracking-widest">{veh.placa}</span>
       </div>
     </div>
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all
+    <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all
       ${selected ? 'bg-brand-orange text-white' : 'bg-white/5 text-neutral-600'}`}>
-      {loading ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
+      {loading ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
     </div>
   </button>
 ));
@@ -170,17 +169,17 @@ const CalendarGrid = memo(({ selectedDate, onSelect }: { selectedDate: string, o
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between px-1">
         <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{monthName} {year}</h4>
-        <div className="flex gap-2">
-          <button onClick={prevMonth} className="p-1 hover:bg-white/10 rounded-lg text-neutral-500 hover:text-white transition-all"><ChevronLeft size={14} /></button>
-          <button onClick={nextMonth} className="p-1 hover:bg-white/10 rounded-lg text-neutral-500 hover:text-white transition-all"><ArrowRight size={14} /></button>
+        <div className="flex gap-1.5">
+          <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg text-neutral-500 hover:text-white transition-all"><ChevronLeft size={14} /></button>
+          <button onClick={nextMonth} className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg text-neutral-500 hover:text-white transition-all"><ArrowRight size={14} /></button>
         </div>
       </div>
       
       <div className="grid grid-cols-7 gap-1">
         {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map(d => (
-          <div key={d} className="text-[8px] font-black text-neutral-600 text-center py-2">{d}</div>
+          <div key={d} className="text-[9px] font-black text-neutral-600 text-center py-2">{d}</div>
         ))}
         {Array.from({ length: startOffset }).map((_, i) => <div key={`empty-${i}`} />)}
         {days.map(d => {
@@ -189,9 +188,9 @@ const CalendarGrid = memo(({ selectedDate, onSelect }: { selectedDate: string, o
             <button
               key={d}
               onClick={() => handleSelect(d)}
-              className={`text-[10px] font-bold py-2 rounded-lg transition-all
+              className={`text-[11px] font-black py-2 rounded-xl transition-all
                 ${active 
-                  ? 'bg-brand-orange text-white shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
+                  ? 'bg-brand-orange text-black shadow-[0_8px_20px_-5px_rgba(249,115,22,0.4)] scale-105 z-10' 
                   : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}
             >
               {d}
@@ -289,35 +288,35 @@ export default function ActividadMapa() {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto min-h-screen print:p-0">
+    <div className="p-3 md:p-4 text-white min-h-screen max-w-7xl mx-auto flex flex-col gap-4 print:p-0">
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-wrap items-end justify-between gap-4 print:hidden"
+        className="flex items-center justify-between gap-4 px-2 print:hidden"
       >
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-2xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
-              <History className="text-brand-orange" size={20} />
-            </div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Actividad en Mapa</h1>
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
+            <History className="text-brand-orange" size={20} />
           </div>
-          <p className="text-neutral-500 text-sm font-medium">Análisis retrospectivo de rutas y telemetría diaria.</p>
+          <div>
+            <h1 className="text-2xl font-black text-white tracking-tight leading-none">Actividad en mapa</h1>
+            <p className="text-xs font-medium text-neutral-500 mt-1.5">Análisis retrospectivo de rutas y telemetría</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
            {step === 2 && (
              <button 
               onClick={handlePrint}
-              className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
+              className="px-5 py-2 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase tracking-widest hover:border-white/20 transition-all flex items-center gap-2"
              >
-               <Printer size={16} /> Imprimir Mapa
+               <Printer size={14} /> Imprimir
              </button>
            )}
-           <div className="flex items-center gap-1 bg-brand-dark-3 p-1.5 rounded-2xl border border-white/5">
+           <div className="flex items-center gap-1 bg-white/5 backdrop-blur-md p-1 rounded-xl border border-white/5">
               {[1, 2].map((s) => (
-                <div key={s} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  step === s ? 'bg-brand-orange text-white' : 'text-neutral-600'
+                <div key={s} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  step === s ? 'bg-brand-orange text-white' : 'text-neutral-500'
                 }`}>
                   Step {s}
                 </div>
@@ -445,59 +444,59 @@ export default function ActividadMapa() {
                   <CalendarGrid selectedDate={selectedDate} onSelect={handleDateSelect} />
                 </div>
 
-                <div className="glass p-6 rounded-[32px] border border-white/5 space-y-6">
-                  <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-                    <Navigation className="text-brand-orange" size={18} />
-                    <h3 className="font-black text-xs text-white uppercase tracking-[0.2em]">Telemetría</h3>
+                <div className="glass p-5 rounded-[32px] border border-white/5 space-y-5">
+                  <div className="flex items-center gap-3 border-b border-white/5 pb-3">
+                    <Navigation className="text-brand-orange" size={16} />
+                    <h3 className="font-black text-[10px] text-white uppercase tracking-[0.2em]">Telemetría</h3>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="bg-brand-dark-3 p-4 rounded-2xl border border-white/5">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-                          <Ruler size={14} />
+                  <div className="space-y-3">
+                    <div className="bg-black/40 p-3.5 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500">
+                          <Ruler size={12} />
                         </div>
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Distancia Total</span>
+                        <span className="text-[9px] font-black text-neutral-600 uppercase tracking-widest">Distancia Total</span>
                       </div>
-                      <p className="text-2xl font-black text-white">
+                      <p className="text-xl font-black text-white">
                         {(routeData?.distance / 1000 || 0).toFixed(2)} <span className="text-xs text-neutral-500">KM</span>
                       </p>
                     </div>
 
-                    <div className="bg-brand-dark-3 p-4 rounded-2xl border border-white/5">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
-                          <Gauge size={14} />
+                    <div className="bg-black/40 p-3.5 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500">
+                          <Gauge size={12} />
                         </div>
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Velocidad Promedio</span>
+                        <span className="text-[9px] font-black text-neutral-600 uppercase tracking-widest">Speed Promedio</span>
                       </div>
-                      <p className="text-2xl font-black text-white">
+                      <p className="text-xl font-black text-white">
                         {(routeData?.avg_speed || 0).toFixed(1)} <span className="text-xs text-neutral-500">KM/H</span>
                       </p>
                     </div>
 
-                    <div className="bg-brand-dark-3 p-4 rounded-2xl border border-white/5">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
-                          <Activity size={14} />
+                    <div className="bg-black/40 p-3.5 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-500">
+                          <Activity size={12} />
                         </div>
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Puntos de Registro</span>
+                        <span className="text-[9px] font-black text-neutral-600 uppercase tracking-widest">Puntos Registro</span>
                       </div>
-                      <p className="text-2xl font-black text-white">
+                      <p className="text-xl font-black text-white">
                         {routeData?.points?.length || 0}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="glass-orange p-6 rounded-[32px] border border-brand-orange/10 flex flex-col items-center text-center gap-4">
-                   <div className="w-12 h-12 rounded-2xl bg-brand-orange flex items-center justify-center shadow-lg shadow-brand-orange/20">
-                      <Info className="text-white" size={24} />
+                <div className="bg-brand-orange/5 p-5 rounded-[32px] border border-brand-orange/10 flex flex-col items-center text-center gap-3">
+                   <div className="w-10 h-10 rounded-xl bg-brand-orange/20 flex items-center justify-center border border-brand-orange/30">
+                      <Info className="text-brand-orange" size={18} />
                    </div>
                    <div>
-                     <p className="text-[10px] font-black text-brand-orange uppercase tracking-widest mb-1">Nota de Actividad</p>
-                     <p className="text-xs text-brand-orange/80 font-medium leading-relaxed">
-                       Los datos mostrados corresponden exclusivamente al rango de 24 horas del día seleccionado.
+                     <p className="text-[10px] font-black text-brand-orange uppercase tracking-widest mb-1">Nota de IA</p>
+                     <p className="text-[10px] text-neutral-500 font-medium leading-relaxed">
+                       Datos exclusivos del rango de 24 horas del día seleccionado.
                      </p>
                    </div>
                 </div>
