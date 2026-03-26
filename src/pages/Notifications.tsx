@@ -90,54 +90,59 @@ export default function Notifications() {
   const unreadCount = notifs.filter(n => n.leido === 'noleido').length;
 
   return (
-    <div className="p-6 md:p-10 text-white min-h-full">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-black flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
-                <Bell className="text-brand-orange w-6 h-6" />
-              </div>
-              Notificaciones
-            </h1>
-            <p className="text-neutral-400 mt-2">
-              Visor de eventos y alertas. {unreadCount > 0 ? `Tienes ${unreadCount} alertas nuevas.` : 'Todo al día.'}
-            </p>
-          </div>
-          <a
-            href="https://link-gps-frontend.vercel.app/user/dashboard/notificaciones"
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-orange text-white font-bold shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:bg-brand-orange/90 transition-colors"
+    <div className="p-4 md:p-6 text-white min-h-full">
+      <div className="max-w-7xl mx-auto">
+        {/* Header (Crystal Style) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-5 py-3 shadow-xl"
           >
-            Gestión Completa
-            <ExternalLink className="w-4 h-4 text-white" />
-          </a>
+            <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
+              <Bell className="text-brand-orange w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black uppercase tracking-tight leading-none">Notificaciones</h1>
+              <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mt-1">
+                {unreadCount > 0 ? `Tienes ${unreadCount} alertas nuevas.` : 'Bandeja al día.'}
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.a
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            href="https://link-gps-frontend.vercel.app/user/dashboard/notificaciones"
+            className="flex items-center justify-center gap-2 px-6 py-2 rounded-xl bg-brand-orange text-white text-xs font-black uppercase tracking-widest shadow-lg hover:bg-brand-orange/90 transition-all active:scale-95"
+          >
+            Gestión Integral
+            <ExternalLink className="w-3.5 h-3.5" />
+          </motion.a>
         </div>
 
-        {/* Content */}
-        <div className="glass rounded-3xl border border-brand-dark-4 overflow-hidden">
+        {/* Content (High Density) */}
+        <div className="bg-white/[0.02] backdrop-blur-sm rounded-3xl border border-white/5 overflow-hidden shadow-3xl">
           {loading ? (
-            <div className="p-8 space-y-6">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="flex gap-4 animate-pulse">
-                  <div className="w-12 h-12 rounded-xl bg-brand-dark-3 shrink-0" />
-                  <div className="flex-1 py-1 space-y-3">
-                    <div className="h-4 w-1/4 bg-brand-dark-3 rounded" />
-                    <div className="h-4 w-3/4 bg-brand-dark-3 rounded" />
+            <div className="p-6 space-y-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                <div key={i} className="flex gap-3 animate-pulse">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 shrink-0" />
+                  <div className="flex-1 py-1 space-y-2">
+                    <div className="h-3 w-1/6 bg-white/5 rounded" />
+                    <div className="h-3 w-3/4 bg-white/5 rounded" />
                   </div>
                 </div>
               ))}
             </div>
           ) : notifs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-20 text-center text-neutral-400">
-              <div className="w-16 h-16 rounded-full bg-brand-dark-3 flex items-center justify-center mb-4">
-                <Inbox className="w-8 h-8 text-neutral-500" />
+            <div className="flex flex-col items-center justify-center p-20 text-center text-neutral-500">
+              <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                <Inbox className="w-6 h-6 text-neutral-600" />
               </div>
-              <p className="text-lg font-bold text-white mb-2">Bandeja vacía</p>
-              <p className="text-sm">No existen eventos recientes para mostrar.</p>
+              <p className="text-base font-black text-white uppercase tracking-widest mb-1">Bandeja vacía</p>
+              <p className="text-xs uppercase tracking-tighter">No hay eventos recientes registrados</p>
             </div>
           ) : (
-            <div className="flex flex-col divide-y divide-brand-dark-4 relative">
+            <div className="flex flex-col divide-y divide-white/5 relative">
               {notifs.map((n, i) => {
                 const info = getTipoInfo(n.tipo);
                 const isUnread = n.leido === 'noleido';
@@ -145,35 +150,39 @@ export default function Notifications() {
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: i * 0.03 }}
                     key={n.id} 
-                    className={`p-6 flex gap-5 hover:bg-white/5 transition-colors cursor-default relative overflow-hidden group
-                      ${isUnread ? 'bg-brand-orange/[0.03]' : ''}`}
+                    className={`p-3 px-6 flex gap-4 hover:bg-white/5 transition-all cursor-default relative overflow-hidden group
+                      ${isUnread ? 'bg-brand-orange/[0.02]' : ''}`}
                   >
                     {isUnread && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-orange shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-orange shadow-[0_0_15px_rgba(249,115,22,0.6)]" />
                     )}
                     
-                    <div className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center border ${info.bg} ${info.border}`}>
-                      <info.Icon className={`w-6 h-6 ${info.color}`} />
+                    <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border ${info.bg} ${info.border} transition-transform group-hover:scale-110`}>
+                      <info.Icon className={`w-5 h-5 ${info.color}`} />
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-4 mb-1">
-                        <span className={`text-xs font-bold uppercase tracking-wider ${info.color}`}>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${info.color}`}>
                           {n.tipo.replace('_', ' ')}
                         </span>
-                        <span className="text-xs text-neutral-500 flex items-center gap-1 shrink-0">
-                          <Clock className="w-3.5 h-3.5" />
+                        <span className="text-[10px] text-neutral-500 font-bold flex items-center gap-1 shrink-0 uppercase tracking-tighter">
+                          <Clock className="w-3 h-3" />
                           {timeAgo(n.created_at)}
                         </span>
                       </div>
-                      <p className={`text-base mb-2 ${isUnread ? 'text-white font-bold' : 'text-neutral-300 font-medium'}`}>
+                      <h4 className={`text-sm truncate ${isUnread ? 'text-white font-black' : 'text-neutral-300 font-bold'}`}>
                         {n.titulo}
-                      </p>
-                      <p className="text-sm text-neutral-400 leading-relaxed">
+                      </h4>
+                      <p className="text-[11px] text-neutral-500 line-clamp-1 italic mt-0.5">
                         {n.mensaje}
                       </p>
+                    </div>
+
+                    <div className="opacity-0 group-hover:opacity-100 flex items-center gap-2 transition-opacity">
+                       <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
                     </div>
                   </motion.div>
                 );
