@@ -348,16 +348,16 @@ export default function MapaVivo() {
                                     zoom={16}
                                     style={{ width: '100%', height: '100%' }}
                                     zoomControl={false}
+                                    className="map-main-instance"
                                 >
-                                    <TileLayer
-                                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
-                                    />
-
                                     <LayersControl position="topright">
-                                        <LayersControl.BaseLayer checked name="Tactical View">
-                                            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png" />
+                                        <LayersControl.BaseLayer checked name="Visión Táctica">
+                                            <TileLayer 
+                                                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png" 
+                                                attribution='&copy; LinkGPS Intelligence'
+                                            />
                                         </LayersControl.BaseLayer>
-                                        <LayersControl.BaseLayer name="Real Imagery">
+                                        <LayersControl.BaseLayer name="Satélite Real">
                                             <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
                                         </LayersControl.BaseLayer>
                                     </LayersControl>
@@ -372,9 +372,13 @@ export default function MapaVivo() {
 
                                     <Marker position={[lat, lng]} icon={iconRef.current}>
                                         <Popup>
-                                            <div className="text-center font-bold text-brand-dark">
-                                                {vehSel?.modelo}<br />
-                                                <span className="text-xs text-brand-orange">{vehSel?.placa}</span>
+                                            <div className="text-center font-bold text-brand-dark p-1">
+                                                <div className="text-sm border-b border-black/5 pb-1 mb-1">{vehSel?.modelo}</div>
+                                                <div className="text-[10px] text-brand-orange font-black uppercase tracking-widest">{vehSel?.placa}</div>
+                                                <div className="mt-2 pt-2 border-t border-black/5 flex flex-col gap-0.5">
+                                                    <div className="text-[9px] font-mono text-neutral-500">LAT: {lat.toFixed(6)}</div>
+                                                    <div className="text-[9px] font-mono text-neutral-500">LON: {lng.toFixed(6)}</div>
+                                                </div>
                                             </div>
                                         </Popup>
                                     </Marker>
@@ -417,7 +421,6 @@ export default function MapaVivo() {
                         onClose={() => setErrorModal(null)}
                         onSolicitar={() => {
                             setErrorModal(null);
-                            // Simplified URL as per user instruction "luego yo lo configuro"
                             window.location.href = 'https://link-gps-frontend.vercel.app/user/dashboard/servicios';
                         }}
                     />
@@ -426,15 +429,15 @@ export default function MapaVivo() {
 
             <style>{`
                 .silver-map-container .leaflet-tile-pane {
-                    filter: grayscale(100%) brightness(0.6) contrast(1.4);
+                    filter: grayscale(100%) brightness(0.45) contrast(1.55);
                 }
                 .silver-map-container .leaflet-container {
-                    background: #111 !important;
+                    background: #0a0a0a !important;
                 }
-                .leaflet-popup-content-wrapper { background: white; border-radius: 12px; }
-                .leaflet-control-layers { background: rgba(0,0,0,0.8) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; border-radius: 12px !important; backdrop-filter: blur(8px); }
-                .leaflet-control-layers-list { padding: 8px; }
-      `}</style>
+                .leaflet-popup-content-wrapper { background: white; border-radius: 16px; padding: 4px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
+                .leaflet-control-layers { background: rgba(0,0,0,0.85) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; border-radius: 12px !important; backdrop-filter: blur(12px); font-family: inherit; }
+                .leaflet-control-layers-list { padding: 8px; font-weight: 900; text-transform: uppercase; font-size: 9px; letter-spacing: 0.1em; }
+            `}</style>
         </div>
     );
 }
