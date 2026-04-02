@@ -23,6 +23,7 @@ import MiDispositivoEventos from './pages/mi_dispositivo_eventos';
 import Geocercas       from './pages/gecercas';
 import GeocercasEventos from './pages/geocercas_eventos';
 import Configuracion   from './pages/configuracion';
+import OSM               from './pages/OSM';
 
 const AuthContainer = ({ children }: { children: React.ReactNode }) => {
   useHandshakeAuth();
@@ -65,6 +66,7 @@ export default function App() {
               <Route path="gecercas"       element={<Geocercas />} />
               <Route path="geocercas_eventos" element={<GeocercasEventos />} />
               <Route path="configuracion"   element={<Configuracion />} />
+              <Route path="osm"            element={<OSM />} />
               {/* Future nested routes */}
             </Route>
           </Route>

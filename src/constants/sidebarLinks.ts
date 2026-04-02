@@ -59,5 +59,6 @@ export const SIDEBAR_LINKS: SidebarLink[] = [
 
   // Sistema
   { label: 'Configuración',  href: '/dashboard/configuracion', icon: Settings,      section: 'Sistema' },
+  { label: 'Prueba de ubicación', href: '/dashboard/osm',   icon: MapPin,        section: 'Sistema' },
   { label: 'Salir a inicio', href: '/home',                 icon: LogOut,          section: 'Sistema' },
 ];
