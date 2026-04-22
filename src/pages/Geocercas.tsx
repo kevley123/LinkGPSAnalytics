@@ -15,6 +15,7 @@ import { useAppContext } from '../context/AppContext';
 import { env } from '../config/env';
 import Geocerca_crear from './Geocerca_crear';
 import Geocerca_editar from './Geocerca_editar';
+import Loading from '../components/loading';
 
 const API_BASE = env.API_BASE_URL;
 
@@ -147,21 +148,7 @@ export default function Geocercas() {
   };
 
   if (connecting) {
-    return (
-      <div className="h-[80vh] flex flex-col items-center justify-center gap-6">
-        <motion.div
-          animate={{ scale: [1, 1.1, 1], rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-20 h-20 rounded-[32px] bg-black flex items-center justify-center shadow-2xl"
-        >
-          <Hexagon className="text-white" size={32} />
-        </motion.div>
-        <div className="text-center space-y-2">
-          <p className="text-sm font-black text-black uppercase tracking-[0.4em] animate-pulse">Conectando con el servidor</p>
-          <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">Sincronizando núcleo de analítica 3D</p>
-        </div>
-      </div>
-    );
+    return <Loading subMessage="Sincronizando núcleo de analítica 3D" />;
   }
 
   return (
@@ -178,14 +165,24 @@ export default function Geocercas() {
           </div>
         </div>
 
-        {step > 1 && !isCreating && !isEditing && (
-          <button
-            onClick={() => setStep(step - 1)}
-            className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white border border-black/5 text-black font-black text-[11px] uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
-          >
-            <ChevronLeft size={16} /> Volver
-          </button>
-        )}
+        <div className="flex items-center gap-4">
+          {step === 2 && (
+            <button 
+              onClick={handleCreate}
+              className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-brand-orange text-white font-black text-[11px] uppercase tracking-widest hover:bg-brand-orange/90 transition-all shadow-lg shadow-brand-orange/20"
+            >
+              <Plus size={16} /> Añadir Geocerca
+            </button>
+          )}
+          {step > 1 && (
+            <button 
+              onClick={() => setStep(step - 1)}
+              className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white border border-black/5 text-black font-black text-[11px] uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
+            >
+              <ChevronLeft size={16} /> Volver
+            </button>
+          )}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -231,9 +228,9 @@ export default function Geocercas() {
               <span className="text-[10px] font-black text-black/40 uppercase tracking-widest">Mostrando geocercas para: {vehSel?.placa}</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {geocercas.map((geo) => (
-                <div key={geo.id} className="group bg-white/40 backdrop-blur-xl rounded-[32px] p-6 border border-black/5 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-all duration-300 relative overflow-hidden">
+                <div key={geo.id} className="group bg-[#f8f9fa] rounded-[32px] p-8 border-4 border-black/5 shadow-sm hover:shadow-2xl hover:shadow-black/5 transition-all duration-300 relative overflow-hidden">
                   <div className={`absolute top-0 left-0 w-1.5 h-full ${geo.tipo === 'entrada' ? 'bg-emerald-500' : 'bg-brand-orange'}`} />
 
                   <div className="flex justify-between items-start mb-6">
@@ -262,7 +259,7 @@ export default function Geocercas() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-black/5">
+                  <div className="grid grid-cols-3 gap-3 pt-4 border-t border-black/5">
                     <button onClick={() => handleViewDetail(geo)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all">
                       <Eye size={12} /> Ver
                     </button>
@@ -288,27 +285,52 @@ export default function Geocercas() {
           </motion.div>
         )}
 
-        {/* CREATE VIEW */}
-        {isCreating && (
-          <motion.div key="create" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Geocerca_crear 
-              vehiculoId={vehSel.id} 
-              onBack={() => setIsCreating(false)} 
-              onSuccess={() => { setIsCreating(false); fetchGeocercas(vehSel.id); }} 
-            />
-          </motion.div>
-        )}
+        {/* MODALS */}
+        <AnimatePresence>
+          {isCreating && (
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-8">
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                onClick={() => setIsCreating(false)}
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white rounded-[48px] p-8 md:p-12 shadow-2xl"
+              >
+                <Geocerca_crear 
+                  vehiculoId={vehSel.id} 
+                  onBack={() => setIsCreating(false)} 
+                  onSuccess={() => { setIsCreating(false); fetchGeocercas(vehSel.id); }} 
+                />
+              </motion.div>
+            </div>
+          )}
 
-        {/* EDIT VIEW */}
-        {isEditing && (
-          <motion.div key="edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Geocerca_editar 
-              geocerca={geoSel} 
-              onBack={() => setIsEditing(false)} 
-              onSuccess={() => { setIsEditing(false); fetchGeocercas(vehSel.id); }} 
-            />
-          </motion.div>
-        )}
+          {isEditing && (
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-8">
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                onClick={() => setIsEditing(false)}
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white rounded-[48px] p-8 md:p-12 shadow-2xl"
+              >
+                <Geocerca_editar 
+                  geocerca={geoSel} 
+                  onBack={() => setIsEditing(false)} 
+                  onSuccess={() => { setIsEditing(false); fetchGeocercas(vehSel.id); }} 
+                />
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* STEP 3: GEOCERCA DETAIL (3D Spline Left + Map Right) */}
         {step === 3 && geoSel && (
