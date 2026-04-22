@@ -13,6 +13,8 @@ import Spline from '@splinetool/react-spline';
 import townaceModel from '../assets/models/animacion_townace.spline?url';
 import { useAppContext } from '../context/AppContext';
 import { env } from '../config/env';
+import Geocerca_crear from './Geocerca_crear';
+import Geocerca_editar from './Geocerca_editar';
 
 const API_BASE = env.API_BASE_URL;
 
@@ -62,6 +64,8 @@ export default function Geocercas() {
   const [geocercas, setGeocercas] = useState<any[]>([]);
   const [geoSel, setGeoSel] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [connecting, setConnecting] = useState(true);
 
   // Initial connection simulation
@@ -118,10 +122,34 @@ export default function Geocercas() {
     setStep(3);
   };
 
+  const handleEdit = (geo: any) => {
+    setGeoSel(geo);
+    setIsEditing(true);
+  };
+
+  const handleCreate = () => {
+    setIsCreating(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('¿Estás seguro de eliminar esta geocerca?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/analytics/geocercas/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      if (res.ok) {
+        setGeocercas(prev => prev.filter(g => g.id !== id));
+      }
+    } catch (e) {
+      console.error('Delete error:', e);
+    }
+  };
+
   if (connecting) {
     return (
       <div className="h-[80vh] flex flex-col items-center justify-center gap-6">
-        <motion.div 
+        <motion.div
           animate={{ scale: [1, 1.1, 1], rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="w-20 h-20 rounded-[32px] bg-black flex items-center justify-center shadow-2xl"
@@ -150,7 +178,7 @@ export default function Geocercas() {
           </div>
         </div>
 
-        {step > 1 && (
+        {step > 1 && !isCreating && !isEditing && (
           <button
             onClick={() => setStep(step - 1)}
             className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white border border-black/5 text-black font-black text-[11px] uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
@@ -238,22 +266,47 @@ export default function Geocercas() {
                     <button onClick={() => handleViewDetail(geo)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all">
                       <Eye size={12} /> Ver
                     </button>
-                    <button className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black/5 text-black/60 text-[10px] font-black uppercase tracking-widest hover:bg-black/10 transition-all">
+                    <button onClick={() => handleEdit(geo)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black/5 text-black/60 text-[10px] font-black uppercase tracking-widest hover:bg-black/10 transition-all">
                       <Edit3 size={12} /> Edit
                     </button>
-                    <button className="flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
+                    <button onClick={() => handleDelete(geo.id)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
                       <Trash2 size={12} />
                     </button>
                   </div>
                 </div>
               ))}
-              <button className="h-[280px] border-2 border-dashed border-black/10 rounded-[32px] flex flex-col items-center justify-center gap-3 text-black/20 hover:border-brand-orange hover:text-brand-orange hover:bg-brand-orange/5 transition-all">
+              <button 
+                onClick={handleCreate}
+                className="h-[280px] border-2 border-dashed border-black/10 rounded-[32px] flex flex-col items-center justify-center gap-3 text-black/20 hover:border-brand-orange hover:text-brand-orange hover:bg-brand-orange/5 transition-all"
+              >
                 <div className="w-12 h-12 rounded-full border-2 border-current flex items-center justify-center">
                   <Plus size={24} />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">Nueva Geocerca</span>
               </button>
             </div>
+          </motion.div>
+        )}
+
+        {/* CREATE VIEW */}
+        {isCreating && (
+          <motion.div key="create" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <Geocerca_crear 
+              vehiculoId={vehSel.id} 
+              onBack={() => setIsCreating(false)} 
+              onSuccess={() => { setIsCreating(false); fetchGeocercas(vehSel.id); }} 
+            />
+          </motion.div>
+        )}
+
+        {/* EDIT VIEW */}
+        {isEditing && (
+          <motion.div key="edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <Geocerca_editar 
+              geocerca={geoSel} 
+              onBack={() => setIsEditing(false)} 
+              onSuccess={() => { setIsEditing(false); fetchGeocercas(vehSel.id); }} 
+            />
           </motion.div>
         )}
 
@@ -270,45 +323,37 @@ export default function Geocercas() {
               <div className="absolute inset-0 z-0">
                 <Spline scene={townaceModel} />
               </div>
-              
+
               {/* Technical Info Overlay (Top) */}
               <div className="absolute top-8 left-8 right-8 z-10 flex flex-wrap gap-3 pointer-events-none">
                 <div className="bg-black/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 flex items-center gap-3">
-                   <div className="w-8 h-8 rounded-xl bg-brand-orange/20 flex items-center justify-center text-brand-orange">
-                      <Radio size={14} />
-                   </div>
-                   <div>
-                      <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Radio</p>
-                      <p className="text-[11px] font-black text-white">{geoSel.radio}m</p>
-                   </div>
+                  <div className="w-8 h-8 rounded-xl bg-brand-orange/20 flex items-center justify-center text-brand-orange">
+                    <Radio size={14} />
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Radio</p>
+                    <p className="text-[11px] font-black text-white">{geoSel.radio}m</p>
+                  </div>
                 </div>
 
                 <div className="bg-black/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 flex items-center gap-3">
-                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${geoSel.tipo === 'entrada' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-brand-orange/20 text-brand-orange'}`}>
-                      <Shield size={14} />
-                   </div>
-                   <div>
-                      <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Tipo</p>
-                      <p className="text-[11px] font-black text-white uppercase">{geoSel.tipo}</p>
-                   </div>
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${geoSel.tipo === 'entrada' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-brand-orange/20 text-brand-orange'}`}>
+                    <Shield size={14} />
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Tipo</p>
+                    <p className="text-[11px] font-black text-white uppercase">{geoSel.tipo}</p>
+                  </div>
                 </div>
 
                 <div className="bg-black/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 flex items-center gap-3">
-                   <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500">
-                      <MapPin size={14} />
-                   </div>
-                   <div>
-                      <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Ubicación</p>
-                      <p className="text-[10px] font-black text-white leading-none">{parseFloat(geoSel.lat_centro).toFixed(4)}, {parseFloat(geoSel.long_centro).toFixed(4)}</p>
-                   </div>
-                </div>
-              </div>
-              
-              {/* Overlay Info (Bottom) */}
-              <div className="absolute bottom-8 left-8 z-10 pointer-events-none">
-                <div className="bg-black/5 backdrop-blur-md px-6 py-4 rounded-2xl border border-black/5">
-                  <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Modelo 3D Activo</p>
-                  <h3 className="text-xl font-black text-black tracking-tight uppercase">Townace Intelligence</h3>
+                  <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500">
+                    <MapPin size={14} />
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Ubicación</p>
+                    <p className="text-[10px] font-black text-white leading-none">{parseFloat(geoSel.lat_centro).toFixed(4)}, {parseFloat(geoSel.long_centro).toFixed(4)}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -349,7 +394,7 @@ export default function Geocercas() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Bottom Details Overlay - Minimalist */}
               <div className="absolute bottom-8 right-8 z-[1000] pointer-events-auto">
                 <div className="bg-white/90 backdrop-blur-xl px-6 py-3 rounded-xl shadow-lg border border-black/5">
