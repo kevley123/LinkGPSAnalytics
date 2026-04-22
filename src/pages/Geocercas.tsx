@@ -8,6 +8,9 @@ import {
 import { MapContainer, TileLayer, Circle, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import Spline from '@splinetool/react-spline';
+// @ts-ignore
+import townaceModel from '../assets/models/animacion_townace.spline?url';
 import { useAppContext } from '../context/AppContext';
 import { env } from '../config/env';
 
@@ -229,16 +232,34 @@ export default function Geocercas() {
           </motion.div>
         )}
 
-        {/* STEP 3: GEOCERCA DETAIL (Layout 3 Cards) */}
+        {/* STEP 3: GEOCERCA DETAIL (3D Spline Left + Map Right) */}
         {step === 3 && geoSel && (
           <motion.div
             key="step3"
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[650px]"
           >
-            {/* Card 1: Map (Big Left) */}
-            <div className="lg:col-span-2 h-[600px] bg-black rounded-[40px] overflow-hidden border border-black/10 shadow-2xl relative">
+            {/* Left Column: 3D Animation Spline */}
+            <div className="bg-white/40 backdrop-blur-xl rounded-[40px] border border-black/5 shadow-2xl overflow-hidden relative group">
+              <div className="absolute inset-0 z-0">
+                <Spline scene={townaceModel} />
+              </div>
+              
+              {/* Overlay Info */}
+              <div className="absolute bottom-8 left-8 z-10 pointer-events-none">
+                <div className="bg-black/5 backdrop-blur-md px-6 py-4 rounded-2xl border border-black/5">
+                  <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Modelo 3D Activo</p>
+                  <h3 className="text-xl font-black text-black tracking-tight uppercase">Townace Intelligence</h3>
+                </div>
+              </div>
+
+              {/* Gloss effect */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent pointer-events-none" />
+            </div>
+
+            {/* Right Column: Map Detail */}
+            <div className="bg-black rounded-[40px] overflow-hidden border border-black/10 shadow-2xl relative">
               <MapContainer
                 center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]}
                 zoom={15}
@@ -264,73 +285,26 @@ export default function Geocercas() {
                 <Marker position={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]} />
               </MapContainer>
 
-              <div className="absolute top-6 left-6 z-[1000] flex flex-col gap-3">
-                <div className="bg-white/90 backdrop-blur-xl px-5 py-3 rounded-2xl border border-black/5 flex items-center gap-3">
+              {/* Map Floating Tag */}
+              <div className="absolute top-8 left-8 z-[1000]">
+                <div className="bg-white/90 backdrop-blur-xl px-5 py-3 rounded-2xl border border-black/5 flex items-center gap-3 shadow-xl">
                   <MapIcon size={18} className="text-brand-orange" />
                   <div>
-                    <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none">Visualización</p>
-                    <p className="text-[12px] font-black text-black uppercase mt-1">{geoSel.nombre}</p>
+                    <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none">Geo-Referencia</p>
+                    <p className="text-[11px] font-black text-black uppercase mt-1">{geoSel.nombre}</p>
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Right Side Cards */}
-            <div className="flex flex-col gap-6">
-              {/* Card 2: Technical Info */}
-              <div className="bg-white/40 backdrop-blur-xl rounded-[40px] p-8 border border-black/5 shadow-xl space-y-8 flex-1">
-                <div className="flex items-center gap-4 border-b border-black/5 pb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center">
-                    <Settings size={20} />
-                  </div>
-                  <h3 className="text-xl font-black text-black tracking-tight">Parámetros</h3>
+              
+              {/* Bottom Details Overlay */}
+              <div className="absolute bottom-8 right-8 left-8 z-[1000] flex justify-between items-end pointer-events-none">
+                <div className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/10 flex flex-col gap-1">
+                  <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Coordenadas</span>
+                  <span className="text-[10px] font-black text-white">{geoSel.lat_centro}, {geoSel.long_centro}</span>
                 </div>
-
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-brand-orange"><Radio size={18} /></div>
-                    <div>
-                      <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Radio de Control</p>
-                      <p className="text-base font-black text-black">{geoSel.radio} metros</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-emerald-500"><MapPin size={18} /></div>
-                    <div>
-                      <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Coordenadas</p>
-                      <p className="text-[11px] font-black text-black">{geoSel.lat_centro}, {geoSel.long_centro}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-blue-500"><Clock size={18} /></div>
-                    <div>
-                      <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Creado el</p>
-                      <p className="text-base font-black text-black">{new Date(geoSel.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3: Status & Action */}
-              <div className="bg-black rounded-[40px] p-8 text-white space-y-6 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/10 rounded-full blur-3xl -mr-16 -mt-16" />
-
-                <div className="relative z-10 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Status IA</span>
-                    <div className="flex items-center gap-2 bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Activo</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs font-medium text-white/60 leading-relaxed italic">
-                    "Este perímetro está siendo monitoreado por el núcleo de analítica en tiempo real para detectar anomalías de trayectoria."
-                  </p>
-
-                  <button className="w-full py-4 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3">
-                    <Edit3 size={16} /> Modificar Perímetro
-                  </button>
+                
+                <div className="bg-brand-orange px-6 py-3 rounded-xl shadow-lg shadow-brand-orange/20">
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest">{geoSel.radio}m Radio</span>
                 </div>
               </div>
             </div>
