@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Hexagon, Plus, Settings, Car, ArrowRight, Loader2,
+  Hexagon, Plus, Car, ArrowRight, Loader2,
   Map as MapIcon, Trash2, Eye, Edit3, ChevronLeft,
-  Shield, MapPin, Radio, Clock
+  Shield
 } from 'lucide-react';
 import { MapContainer, TileLayer, Circle, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
