@@ -7,7 +7,7 @@ import splineScene from '../assets/models/scene.splinecode?url';
 import { useAppContext } from '../context/AppContext';
 import { NAV_LINKS } from '../constants/navLinks';
 import logo from '../assets/logo_home.png';
-
+import { env } from '../config/env';
 // --- Animation Variants ---
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -106,7 +106,7 @@ export default function Home() {
                   </button>
                 ) : (
                   <a
-                    href="https://link-gps-frontend.vercel.app/login"
+                    href={`${env.FRONTEND_URL}/login`}
                     className="px-8 py-3.5 rounded-2xl bg-black text-white font-black text-[10px] uppercase tracking-widest hover:bg-neutral-800 active:scale-95 transition-all shadow-xl flex items-center gap-2"
                   >
                     Iniciar Sesión

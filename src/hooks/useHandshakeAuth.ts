@@ -14,7 +14,8 @@ interface HandshakeResponse {
   message?: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
+import { env } from '../config/env';
+const API_BASE = env.API_BASE_URL;
 
 // ─── Mock intercept (active when VITE_API_BASE_URL is not set) ───────────────
 const MOCK_DELAY_MS = 1800; // simulate realistic network latency

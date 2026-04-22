@@ -48,7 +48,8 @@ const timeAgo = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('es-BO', { day: 'numeric', month: 'short' });
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
+import { env } from '../config/env';
+const API_BASE = env.API_BASE_URL;
 
 export default function Notifications() {
   const { authToken, setNotifsCount } = useAppContext();
@@ -111,7 +112,7 @@ export default function Notifications() {
 
           <motion.a
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-            href="https://link-gps-frontend.vercel.app/user/dashboard/notificaciones"
+            href={`${env.FRONTEND_URL}/user/dashboard/notificaciones`}
             className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-brand-orange text-white text-xs font-bold shadow-lg hover:bg-brand-orange/90 transition-all active:scale-95"
           >
             Ver más

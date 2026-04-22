@@ -9,7 +9,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents, LayersControl } from 're
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { env } from '../config/env';
 // --- Tactical Marker Icon ---
 const customIcon = new L.Icon({
     iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', 
@@ -37,7 +37,7 @@ export default function OSM() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/osm/reverse', {
+            const response = await fetch(env.OSM_REVERSE_API, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

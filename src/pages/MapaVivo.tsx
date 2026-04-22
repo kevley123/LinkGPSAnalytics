@@ -13,8 +13,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { env } from '../config/env';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
+const API_BASE = env.API_BASE_URL;
 
 // ── Custom SVG Icon for the marker (Deep Tech Orange) ──────────────────────────
 const createVehicleIcon = (color = '#F97316') => new L.DivIcon({
@@ -421,7 +422,7 @@ export default function MapaVivo() {
                         onClose={() => setErrorModal(null)}
                         onSolicitar={() => {
                             setErrorModal(null);
-                            window.location.href = 'https://link-gps-frontend.vercel.app/user/dashboard/servicios';
+                            window.location.href = `${env.FRONTEND_URL}/user/dashboard/servicios`;
                         }}
                     />
                 )}

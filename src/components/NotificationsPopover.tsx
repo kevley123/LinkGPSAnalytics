@@ -90,7 +90,8 @@ const timeAgo = (dateStr: string) => {
 };
 
 // --- API Service mapping to useHandshakeAuth structure ---
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
+import { env } from '../config/env';
+const API_BASE = env.API_BASE_URL;
 
 export default function NotificationsPopover() {
   const { authToken, setNotifsCount } = useAppContext();
@@ -262,7 +263,7 @@ export default function NotificationsPopover() {
 
             {/* Footer */}
             <a
-              href="https://link-gps-frontend.vercel.app/user/dashboard/notificaciones"
+              href={`${env.FRONTEND_URL}/user/dashboard/notificaciones`}
               className="p-3 bg-black/40 border-t border-brand-dark-4 hover:bg-black/60 transition-colors flex items-center justify-center gap-2 group"
             >
               <span className="text-xs font-semibold text-brand-orange group-hover:text-amber-400 transition-colors">

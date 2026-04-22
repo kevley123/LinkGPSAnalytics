@@ -68,7 +68,8 @@ const DigitalClock = () => {
   );
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
+import { env } from '../config/env';
+const API_BASE = env.API_BASE_URL;
 
 export default function Dashboard() {
   const { user, authToken } = useAppContext();
@@ -126,15 +127,15 @@ export default function Dashboard() {
       <div className="absolute top-10 left-10 right-10 z-10 flex items-center justify-between">
         <motion.div
           initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] px-10 py-5 shadow-2xl flex flex-col"
+          className="bg-black/5 backdrop-blur-2xl border border-black/5 rounded-[32px] px-10 py-5 shadow-2xl flex flex-col"
         >
-          <h1 className="text-2xl font-black text-white uppercase tracking-tight leading-none">Bienvenido, {user?.name?.split(' ')[0] ?? 'Operator'}</h1>
+          <h1 className="text-2xl font-black text-black uppercase tracking-tight leading-none">Bienvenido, {user?.name?.split(' ')[0] ?? 'Operator'}</h1>
           <p className="text-brand-orange text-[10px] font-black uppercase tracking-[0.4em] mt-2">Mapa de calor de zonas rojas</p>
         </motion.div>
 
         <motion.div
           initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] px-12 py-6 shadow-2xl"
+          className="bg-black/5 backdrop-blur-2xl border border-black/5 rounded-[32px] px-12 py-6 shadow-2xl"
         >
           <DigitalClock />
         </motion.div>
@@ -182,7 +183,7 @@ export default function Dashboard() {
         </div>
 
         {/* Shrunken Legend */}
-        <div className="bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl p-4 flex flex-col gap-2">
+        <div className="bg-white/40 backdrop-blur-md border border-black/5 rounded-2xl p-4 flex flex-col gap-2 shadow-sm">
            <div className="flex items-center justify-between text-[9px] font-black text-neutral-400 uppercase tracking-widest">
               <span>IA Engine:</span>
               <span className="text-green-500 flex items-center gap-1">Online</span>
@@ -197,8 +198,8 @@ export default function Dashboard() {
       >
         <div className="bg-orange-200/10 backdrop-blur-xl border border-orange-200/20 rounded-2xl p-4 flex flex-col gap-2 shadow-2xl">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="text-orange-200" size={14} />
-            <h4 className="text-orange-200 font-black text-[10px] uppercase tracking-widest">
+            <ShieldCheck className="text-brand-orange" size={14} />
+            <h4 className="text-brand-orange font-black text-[10px] uppercase tracking-widest">
               Análisis de Riesgo H3
             </h4>
           </div>
@@ -207,9 +208,9 @@ export default function Dashboard() {
             Mapa de calor predictivo basado en indexación geoespacial de alta resolución para detectar patrones de robo y puntos ciegos nacionales en tiempo real.
           </p>
           
-          <div className="flex items-center gap-1.5 mt-1 border-t border-white/5 pt-2">
-            <Info size={10} className="text-orange-200/50" />
-            <span className="text-[8px] font-black text-orange-200/40 uppercase tracking-[0.2em]">Tecnología Verificada por IA</span>
+          <div className="flex items-center gap-1.5 mt-1 border-t border-black/5 pt-2">
+            <Info size={10} className="text-brand-orange/50" />
+            <span className="text-[8px] font-black text-brand-orange/40 uppercase tracking-[0.2em]">Tecnología Verificada por IA</span>
           </div>
         </div>
       </motion.div>
@@ -217,10 +218,10 @@ export default function Dashboard() {
       {/* ── Custom CSS for Black-Lined Map ───────────────────────────────────  */}
       <style>{`
         .silver-map-container .leaflet-tile-pane {
-          filter: grayscale(100%) brightness(0.4) contrast(1.6);
+          filter: grayscale(100%) brightness(0.8) contrast(1.2);
         }
         .silver-map-container .leaflet-container {
-          background: #111 !important;
+          background: #f8f8f8 !important;
         }
         .leaflet-attribution-container { display: none !important; }
       `}</style>

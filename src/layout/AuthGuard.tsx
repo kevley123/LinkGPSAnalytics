@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-
+import { env } from '../config/env';
 export default function AuthGuard() {
   const { isAuthenticated, isAuthLoading } = useAppContext();
 
@@ -15,7 +15,7 @@ export default function AuthGuard() {
 
   if (!isAuthenticated) {
     // Redirect them to the primary external login platform
-    window.location.href = 'https://link-gps-frontend.vercel.app/login';
+    window.location.href = `${env.FRONTEND_URL}/login`;
     return null;
   }
 

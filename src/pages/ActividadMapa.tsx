@@ -36,8 +36,9 @@ const AntPath = ({ positions, options }: { positions: any[]; options: any }) => 
 };
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { env } from '../config/env';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
+const API_BASE = env.API_BASE_URL;
 
 // ── Update View component ─────────────────────────────────────────────────────
 const ViewUpdater = ({ bounds }: { bounds: L.LatLngBoundsExpression | null }) => {
@@ -513,7 +514,7 @@ export default function ActividadMapa() {
             onClose={() => setErrorModal(null)} 
             onSolicitar={() => {
               setErrorModal(null);
-              window.location.href = 'https://link-gps-frontend.vercel.app/pricing';
+              window.location.href = `${env.FRONTEND_URL}/pricing`;
             }}
           />
         )}

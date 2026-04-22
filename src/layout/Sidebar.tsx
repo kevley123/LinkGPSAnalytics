@@ -60,12 +60,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   const sidebarContent = (
     <motion.aside
-      className="flex flex-col h-full bg-black border-r border-white/5 overflow-hidden"
+      className="flex flex-col h-full bg-[#f0f0f5] backdrop-blur-[60px] border-r border-black/5 overflow-hidden"
       animate={{ width: open ? SIDEBAR_WIDTH_OPEN : SIDEBAR_WIDTH_CLOSED }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
       {/* Logo row */}
-      <div className="h-20 flex items-center px-6 border-b border-white/5 shrink-0 overflow-hidden">
+      <div className="h-20 flex items-center px-6 border-b border-black/5 shrink-0 overflow-hidden bg-black/[0.02]">
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
             <motion.img
@@ -81,14 +81,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           ) : (
             <motion.div
               key="logo-icon"
-              className="w-10 h-10 bg-brand-orange border-2 border-white/10 rounded-xl
-                         flex items-center justify-center shrink-0"
+              className="w-11 h-11 bg-black border-2 border-black/5 rounded-2xl
+                         flex items-center justify-center shrink-0 shadow-lg shadow-black/5"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.15 }}
             >
-              <span className="text-black font-black text-sm">L</span>
+              <span className="text-white font-black text-sm">L</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -98,8 +98,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           {open && (
             <motion.button
               onClick={onClose}
-              className="ml-auto w-8 h-8 rounded-xl flex items-center justify-center
-                         text-neutral-500 hover:text-brand-orange hover:bg-white/5 transition-colors"
+              className="ml-auto w-9 h-9 rounded-xl flex items-center justify-center
+                         text-black/40 hover:text-black hover:bg-black/5 transition-all"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -122,7 +122,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               {open && (
                 <button
                   onClick={() => toggleSection(section)}
-                  className="px-6 py-3 flex items-center justify-between text-[11px] font-black text-white uppercase tracking-[0.25em] hover:text-brand-orange transition-colors group"
+                  className="px-6 py-4 flex items-center justify-between text-[10px] font-black text-black/80 uppercase tracking-[0.25em] hover:text-black transition-colors group"
                 >
                   <span>{section}</span>
                   <motion.div
@@ -152,10 +152,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                             key={link.href}
                             to={link.href}
                             className={clsx(
-                              'relative flex items-center gap-4 px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-150 group',
+                              'relative flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[12px] font-black uppercase tracking-wider transition-all duration-200 group',
                               active
-                                ? 'bg-brand-orange text-white shadow-xl shadow-brand-orange/20'
-                                : 'text-neutral-500 hover:text-white hover:bg-white/5',
+                                ? 'bg-black text-white shadow-2xl shadow-black/20 translate-x-1'
+                                : 'text-black/50 hover:text-black hover:bg-black/5',
                             )}
                             title={!open ? link.label : undefined}
                           >
@@ -221,13 +221,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="px-4 py-4 border-t border-white/5"
+            className="px-4 py-4 border-t border-black/5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <p className="text-[9px] font-black text-neutral-700 uppercase tracking-widest leading-relaxed">
-              LinkGPS<br />Modelo de ML
+            <p className="text-[9px] font-black text-black/30 uppercase tracking-[0.3em] leading-relaxed">
+              LinkGPS<br />Premium Analytics
             </p>
           </motion.div>
         )}

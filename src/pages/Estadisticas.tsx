@@ -14,8 +14,9 @@ import {
 } from 'recharts';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { env } from '../config/env';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://11tkrk1f2zwo.share.zrok.io';
+const API_BASE = env.API_BASE_URL;
 
 // ── Vehicle Selection Chip ───────────────────────────────────────────────────
 const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
@@ -460,7 +461,7 @@ export default function Estadisticas() {
             onClose={() => setErrorModal(null)} 
             onSolicitar={() => {
               setErrorModal(null);
-              window.location.href = 'https://link-gps-frontend.vercel.app/pricing';
+              window.location.href = `${env.FRONTEND_URL}/pricing`;
             }}
           />
         )}

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { XCircle, ArrowLeft } from 'lucide-react';
 import logo from '../assets/logo_home.png';
-
+import { env } from '../config/env';
 export default function Unauthorized() {
 
   return (
@@ -35,7 +35,7 @@ export default function Unauthorized() {
         </div>
 
         <a
-          href="https://linkgps.com"
+          href={env.FRONTEND_URL}
           className="btn-primary"
           rel="noopener noreferrer"
         >
