@@ -93,36 +93,42 @@ export default function Geocerca_crear({ vehiculoId, onBack, onSuccess }: Geocer
                 type="text" 
                 value={formData.nombre}
                 onChange={e => setFormData({...formData, nombre: e.target.value})}
-                className="w-full bg-white border border-black/5 rounded-2xl px-6 py-4 text-sm font-bold focus:border-brand-orange outline-none transition-all"
+                className="w-full bg-white border border-black/5 rounded-2xl px-6 py-4 text-sm font-bold text-black focus:border-brand-orange outline-none transition-all"
                 placeholder="Ej: Entrada Principal"
                 required
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-black/40 uppercase tracking-widest px-1">Radio (metros)</label>
-                <input 
-                  type="number" 
-                  value={formData.radio}
-                  onChange={e => setFormData({...formData, radio: parseInt(e.target.value)})}
-                  className="w-full bg-white border border-black/5 rounded-2xl px-6 py-4 text-sm font-bold focus:border-brand-orange outline-none transition-all"
-                  min="50"
-                  max="5000"
-                  required
-                />
+            <div className="space-y-4">
+              <div className="flex justify-between items-end px-1">
+                <label className="text-[10px] font-black text-black/40 uppercase tracking-widest">Radio de Cobertura</label>
+                <span className="text-sm font-black text-brand-orange">{formData.radio} <span className="text-[10px] text-black/20">mts</span></span>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-black/40 uppercase tracking-widest px-1">Tipo de Control</label>
-                <select 
-                  value={formData.tipo}
-                  onChange={e => setFormData({...formData, tipo: e.target.value})}
-                  className="w-full bg-white border border-black/5 rounded-2xl px-6 py-4 text-sm font-bold focus:border-brand-orange outline-none transition-all appearance-none"
-                >
-                  <option value="salida">SALIDA (GEOFENCE OUT)</option>
-                  <option value="entrada">ENTRADA (GEOFENCE IN)</option>
-                </select>
+              <input 
+                type="range" 
+                min="50" 
+                max="2000" 
+                step="10"
+                value={formData.radio}
+                onChange={e => setFormData({...formData, radio: parseInt(e.target.value)})}
+                className="w-full h-2 bg-black/5 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+              />
+              <div className="flex justify-between text-[9px] font-bold text-black/20 uppercase tracking-widest px-1">
+                <span>50m</span>
+                <span>2km</span>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-black/40 uppercase tracking-widest px-1">Tipo de Control</label>
+              <select 
+                value={formData.tipo}
+                onChange={e => setFormData({...formData, tipo: e.target.value})}
+                className="w-full bg-white border border-black/5 rounded-2xl px-6 py-4 text-sm font-bold text-black focus:border-brand-orange outline-none transition-all appearance-none"
+              >
+                <option value="salida" className="text-black">SALIDA (GEOFENCE OUT)</option>
+                <option value="entrada" className="text-black">ENTRADA (GEOFENCE IN)</option>
+              </select>
             </div>
 
             <div className="bg-black/5 p-6 rounded-3xl space-y-4">
