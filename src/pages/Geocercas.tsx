@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Hexagon, Plus, Car, ArrowRight, Loader2,
   Map as MapIcon, Trash2, Eye, Edit3, ChevronLeft,
-  Shield
+  Shield, Radio, MapPin
 } from 'lucide-react';
 import { MapContainer, TileLayer, Circle, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -62,6 +62,13 @@ export default function Geocercas() {
   const [geocercas, setGeocercas] = useState<any[]>([]);
   const [geoSel, setGeoSel] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [connecting, setConnecting] = useState(true);
+
+  // Initial connection simulation
+  useEffect(() => {
+    const timer = setTimeout(() => setConnecting(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Fetch Vehicles
   useEffect(() => {
@@ -110,6 +117,24 @@ export default function Geocercas() {
     setGeoSel(geo);
     setStep(3);
   };
+
+  if (connecting) {
+    return (
+      <div className="h-[80vh] flex flex-col items-center justify-center gap-6">
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-20 h-20 rounded-[32px] bg-black flex items-center justify-center shadow-2xl"
+        >
+          <Hexagon className="text-white" size={32} />
+        </motion.div>
+        <div className="text-center space-y-2">
+          <p className="text-sm font-black text-black uppercase tracking-[0.4em] animate-pulse">Conectando con el servidor</p>
+          <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">Sincronizando núcleo de analítica 3D</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 min-h-screen">
@@ -246,19 +271,49 @@ export default function Geocercas() {
                 <Spline scene={townaceModel} />
               </div>
               
-              {/* Overlay Info */}
+              {/* Technical Info Overlay (Top) */}
+              <div className="absolute top-8 left-8 right-8 z-10 flex flex-wrap gap-3 pointer-events-none">
+                <div className="bg-black/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 flex items-center gap-3">
+                   <div className="w-8 h-8 rounded-xl bg-brand-orange/20 flex items-center justify-center text-brand-orange">
+                      <Radio size={14} />
+                   </div>
+                   <div>
+                      <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Radio</p>
+                      <p className="text-[11px] font-black text-white">{geoSel.radio}m</p>
+                   </div>
+                </div>
+
+                <div className="bg-black/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 flex items-center gap-3">
+                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${geoSel.tipo === 'entrada' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-brand-orange/20 text-brand-orange'}`}>
+                      <Shield size={14} />
+                   </div>
+                   <div>
+                      <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Tipo</p>
+                      <p className="text-[11px] font-black text-white uppercase">{geoSel.tipo}</p>
+                   </div>
+                </div>
+
+                <div className="bg-black/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 flex items-center gap-3">
+                   <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500">
+                      <MapPin size={14} />
+                   </div>
+                   <div>
+                      <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Ubicación</p>
+                      <p className="text-[10px] font-black text-white leading-none">{parseFloat(geoSel.lat_centro).toFixed(4)}, {parseFloat(geoSel.long_centro).toFixed(4)}</p>
+                   </div>
+                </div>
+              </div>
+              
+              {/* Overlay Info (Bottom) */}
               <div className="absolute bottom-8 left-8 z-10 pointer-events-none">
                 <div className="bg-black/5 backdrop-blur-md px-6 py-4 rounded-2xl border border-black/5">
                   <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Modelo 3D Activo</p>
                   <h3 className="text-xl font-black text-black tracking-tight uppercase">Townace Intelligence</h3>
                 </div>
               </div>
-
-              {/* Gloss effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            <div className="bg-white rounded-[40px] overflow-hidden border border-black/5 shadow-2xl relative geocerca-map-silver">
+            <div className="bg-white rounded-[40px] overflow-hidden border border-black/5 shadow-2xl relative">
               <MapContainer
                 center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]}
                 zoom={15}
@@ -266,8 +321,8 @@ export default function Geocercas() {
                 zoomControl={false}
               >
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                  attribution='&copy; CARTO'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; OpenStreetMap contributors'
                 />
                 <ChangeView center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]} />
                 <Circle
@@ -295,15 +350,10 @@ export default function Geocercas() {
                 </div>
               </div>
               
-              {/* Bottom Details Overlay */}
-              <div className="absolute bottom-8 right-8 left-8 z-[1000] flex justify-between items-end pointer-events-none">
-                <div className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/10 flex flex-col gap-1">
-                  <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Coordenadas</span>
-                  <span className="text-[10px] font-black text-white">{geoSel.lat_centro}, {geoSel.long_centro}</span>
-                </div>
-                
-                <div className="bg-brand-orange px-6 py-3 rounded-xl shadow-lg shadow-brand-orange/20">
-                  <span className="text-[10px] font-black text-white uppercase tracking-widest">{geoSel.radio}m Radio</span>
+              {/* Bottom Details Overlay - Minimalist */}
+              <div className="absolute bottom-8 right-8 z-[1000] pointer-events-auto">
+                <div className="bg-white/90 backdrop-blur-xl px-6 py-3 rounded-xl shadow-lg border border-black/5">
+                  <span className="text-[10px] font-black text-black uppercase tracking-widest">Visualización en Vivo</span>
                 </div>
               </div>
             </div>
@@ -313,13 +363,6 @@ export default function Geocercas() {
 
       <style>{`
         .leaflet-container { background: #f8f9fa !important; border-radius: 40px; }
-        .geocerca-map-silver .leaflet-tile-pane {
-          filter: grayscale(1) brightness(0.95) contrast(1.1);
-        }
-        /* Highlight roads in orange/dark */
-        .geocerca-map-silver .leaflet-tile {
-          filter: sepia(20%) hue-rotate(10deg);
-        }
       `}</style>
     </div>
   );
