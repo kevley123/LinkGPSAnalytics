@@ -238,7 +238,7 @@ export default function Geocercas() {
             key="step3"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[650px]"
+            className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.6fr] gap-6 h-[450px]"
           >
             {/* Left Column: 3D Animation Spline */}
             <div className="bg-white/40 backdrop-blur-xl rounded-[40px] border border-black/5 shadow-2xl overflow-hidden relative group">
@@ -258,8 +258,7 @@ export default function Geocercas() {
               <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* Right Column: Map Detail */}
-            <div className="bg-black rounded-[40px] overflow-hidden border border-black/10 shadow-2xl relative">
+            <div className="bg-white rounded-[40px] overflow-hidden border border-black/5 shadow-2xl relative geocerca-map-silver">
               <MapContainer
                 center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]}
                 zoom={15}
@@ -267,7 +266,7 @@ export default function Geocercas() {
                 zoomControl={false}
               >
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
                   attribution='&copy; CARTO'
                 />
                 <ChangeView center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]} />
@@ -313,7 +312,19 @@ export default function Geocercas() {
       </AnimatePresence>
 
       <style>{`
-        .leaflet-container { background: #000 !important; border-radius: 40px; }
+        .leaflet-container { background: #f0f0f5 !important; border-radius: 40px; }
+        .geocerca-map-silver .leaflet-tile-pane {
+          filter: grayscale(100%) brightness(1.1) contrast(1.1) sepia(10%) hue-rotate(10deg);
+        }
+        /* Trick to make streets look orange using mix-blend-mode if needed or just clear contrast */
+        .geocerca-map-silver::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle, rgba(249,115,22,0.05) 0%, transparent 70%);
+          pointer-events: none;
+          z-index: 400;
+        }
       `}</style>
     </div>
   );
