@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Hexagon, Plus, Settings, Car, ArrowRight, Loader2, 
+import {
+  Hexagon, Plus, Settings, Car, ArrowRight, Loader2,
   Map as MapIcon, Trash2, Eye, Edit3, ChevronLeft,
   Shield, MapPin, Radio, Clock
 } from 'lucide-react';
@@ -85,7 +85,7 @@ export default function Geocercas() {
     if (!authToken) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/vehiculos/${vehId}/geocercas`, {
+      const res = await fetch(`${API_BASE}/api/analytics/geocercas/vehiculo/${vehId}`, {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
       const data = await res.json();
@@ -123,7 +123,7 @@ export default function Geocercas() {
         </div>
 
         {step > 1 && (
-          <button 
+          <button
             onClick={() => setStep(step - 1)}
             className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white border border-black/5 text-black font-black text-[11px] uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
           >
@@ -135,7 +135,7 @@ export default function Geocercas() {
       <AnimatePresence mode="wait">
         {/* STEP 1: VEHICLE SELECTION */}
         {step === 1 && (
-          <motion.div 
+          <motion.div
             key="step1"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -146,11 +146,11 @@ export default function Geocercas() {
               [1, 2, 3].map(i => <div key={i} className="h-28 rounded-[32px] bg-black/5 animate-pulse" />)
             ) : (
               vehicles.map(v => (
-                <VehicleChip 
-                  key={v.id} 
-                  veh={v} 
+                <VehicleChip
+                  key={v.id}
+                  veh={v}
                   selected={vehSel?.id === v.id}
-                  onSelect={handleSelectVehicle} 
+                  onSelect={handleSelectVehicle}
                 />
               ))
             )}
@@ -163,7 +163,7 @@ export default function Geocercas() {
 
         {/* STEP 2: GEOCERCAS LIST */}
         {step === 2 && (
-          <motion.div 
+          <motion.div
             key="step2"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -179,14 +179,13 @@ export default function Geocercas() {
               {geocercas.map((geo) => (
                 <div key={geo.id} className="group bg-white/40 backdrop-blur-xl rounded-[32px] p-6 border border-black/5 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-all duration-300 relative overflow-hidden">
                   <div className={`absolute top-0 left-0 w-1.5 h-full ${geo.tipo === 'entrada' ? 'bg-emerald-500' : 'bg-brand-orange'}`} />
-                  
+
                   <div className="flex justify-between items-start mb-6">
                     <div className="space-y-1">
                       <h3 className="text-lg font-black text-black tracking-tight">{geo.nombre}</h3>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                          geo.tipo === 'entrada' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-brand-orange/10 text-brand-orange'
-                        }`}>
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${geo.tipo === 'entrada' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-brand-orange/10 text-brand-orange'
+                          }`}>
                           Control {geo.tipo}
                         </span>
                       </div>
@@ -197,14 +196,14 @@ export default function Geocercas() {
                   </div>
 
                   <div className="flex items-center gap-4 mb-8">
-                     <div className="flex-1 space-y-1">
-                        <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Radio</p>
-                        <p className="text-sm font-black text-black">{geo.radio} <span className="text-xs text-black/40">mts</span></p>
-                     </div>
-                     <div className="flex-1 space-y-1 text-right">
-                        <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Estado</p>
-                        <p className="text-sm font-black text-emerald-500 uppercase tracking-tighter">{geo.estado}</p>
-                     </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Radio</p>
+                      <p className="text-sm font-black text-black">{geo.radio} <span className="text-xs text-black/40">mts</span></p>
+                    </div>
+                    <div className="flex-1 space-y-1 text-right">
+                      <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Estado</p>
+                      <p className="text-sm font-black text-emerald-500 uppercase tracking-tighter">{geo.estado}</p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 pt-2 border-t border-black/5">
@@ -232,7 +231,7 @@ export default function Geocercas() {
 
         {/* STEP 3: GEOCERCA DETAIL (Layout 3 Cards) */}
         {step === 3 && geoSel && (
-          <motion.div 
+          <motion.div
             key="step3"
             initial={{ opacity: 0, scale: 1.02 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -240,7 +239,7 @@ export default function Geocercas() {
           >
             {/* Card 1: Map (Big Left) */}
             <div className="lg:col-span-2 h-[600px] bg-black rounded-[40px] overflow-hidden border border-black/10 shadow-2xl relative">
-               <MapContainer
+              <MapContainer
                 center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]}
                 zoom={15}
                 style={{ height: '100%', width: '100%' }}
@@ -251,10 +250,10 @@ export default function Geocercas() {
                   attribution='&copy; CARTO'
                 />
                 <ChangeView center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]} />
-                <Circle 
+                <Circle
                   center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]}
                   radius={geoSel.radio}
-                  pathOptions={{ 
+                  pathOptions={{
                     color: geoSel.tipo === 'entrada' ? '#10b981' : '#F97316',
                     fillColor: geoSel.tipo === 'entrada' ? '#10b981' : '#F97316',
                     fillOpacity: 0.15,
@@ -266,74 +265,74 @@ export default function Geocercas() {
               </MapContainer>
 
               <div className="absolute top-6 left-6 z-[1000] flex flex-col gap-3">
-                 <div className="bg-white/90 backdrop-blur-xl px-5 py-3 rounded-2xl border border-black/5 flex items-center gap-3">
-                    <MapIcon size={18} className="text-brand-orange" />
-                    <div>
-                      <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none">Visualización</p>
-                      <p className="text-[12px] font-black text-black uppercase mt-1">{geoSel.nombre}</p>
-                    </div>
-                 </div>
+                <div className="bg-white/90 backdrop-blur-xl px-5 py-3 rounded-2xl border border-black/5 flex items-center gap-3">
+                  <MapIcon size={18} className="text-brand-orange" />
+                  <div>
+                    <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none">Visualización</p>
+                    <p className="text-[12px] font-black text-black uppercase mt-1">{geoSel.nombre}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Right Side Cards */}
             <div className="flex flex-col gap-6">
-               {/* Card 2: Technical Info */}
-               <div className="bg-white/40 backdrop-blur-xl rounded-[40px] p-8 border border-black/5 shadow-xl space-y-8 flex-1">
-                  <div className="flex items-center gap-4 border-b border-black/5 pb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center">
-                      <Settings size={20} />
+              {/* Card 2: Technical Info */}
+              <div className="bg-white/40 backdrop-blur-xl rounded-[40px] p-8 border border-black/5 shadow-xl space-y-8 flex-1">
+                <div className="flex items-center gap-4 border-b border-black/5 pb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center">
+                    <Settings size={20} />
+                  </div>
+                  <h3 className="text-xl font-black text-black tracking-tight">Parámetros</h3>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-brand-orange"><Radio size={18} /></div>
+                    <div>
+                      <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Radio de Control</p>
+                      <p className="text-base font-black text-black">{geoSel.radio} metros</p>
                     </div>
-                    <h3 className="text-xl font-black text-black tracking-tight">Parámetros</h3>
                   </div>
-
-                  <div className="grid grid-cols-1 gap-6">
-                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-brand-orange"><Radio size={18} /></div>
-                        <div>
-                          <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Radio de Control</p>
-                          <p className="text-base font-black text-black">{geoSel.radio} metros</p>
-                        </div>
-                     </div>
-                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-emerald-500"><MapPin size={18} /></div>
-                        <div>
-                          <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Coordenadas</p>
-                          <p className="text-[11px] font-black text-black">{geoSel.lat_centro}, {geoSel.long_centro}</p>
-                        </div>
-                     </div>
-                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-blue-500"><Clock size={18} /></div>
-                        <div>
-                          <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Creado el</p>
-                          <p className="text-base font-black text-black">{new Date(geoSel.created_at).toLocaleDateString()}</p>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-
-               {/* Card 3: Status & Action */}
-               <div className="bg-black rounded-[40px] p-8 text-white space-y-6 shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/10 rounded-full blur-3xl -mr-16 -mt-16" />
-                  
-                  <div className="relative z-10 space-y-6">
-                    <div className="flex items-center justify-between">
-                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Status IA</span>
-                       <div className="flex items-center gap-2 bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Activo</span>
-                       </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-emerald-500"><MapPin size={18} /></div>
+                    <div>
+                      <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Coordenadas</p>
+                      <p className="text-[11px] font-black text-black">{geoSel.lat_centro}, {geoSel.long_centro}</p>
                     </div>
-
-                    <p className="text-xs font-medium text-white/60 leading-relaxed italic">
-                      "Este perímetro está siendo monitoreado por el núcleo de analítica en tiempo real para detectar anomalías de trayectoria."
-                    </p>
-
-                    <button className="w-full py-4 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3">
-                       <Edit3 size={16} /> Modificar Perímetro
-                    </button>
                   </div>
-               </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-blue-500"><Clock size={18} /></div>
+                    <div>
+                      <p className="text-[9px] font-black text-black/30 uppercase tracking-widest">Creado el</p>
+                      <p className="text-base font-black text-black">{new Date(geoSel.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Status & Action */}
+              <div className="bg-black rounded-[40px] p-8 text-white space-y-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/10 rounded-full blur-3xl -mr-16 -mt-16" />
+
+                <div className="relative z-10 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Status IA</span>
+                    <div className="flex items-center gap-2 bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Activo</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs font-medium text-white/60 leading-relaxed italic">
+                    "Este perímetro está siendo monitoreado por el núcleo de analítica en tiempo real para detectar anomalías de trayectoria."
+                  </p>
+
+                  <button className="w-full py-4 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3">
+                    <Edit3 size={16} /> Modificar Perímetro
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
