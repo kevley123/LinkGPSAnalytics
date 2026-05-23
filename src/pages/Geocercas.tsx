@@ -167,7 +167,7 @@ export default function Geocercas() {
 
         <div className="flex items-center gap-4">
           {step === 2 && (
-            <button 
+            <button
               onClick={handleCreate}
               className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-brand-orange text-white font-black text-[11px] uppercase tracking-widest hover:bg-brand-orange/90 transition-all shadow-lg shadow-brand-orange/20"
             >
@@ -175,7 +175,7 @@ export default function Geocercas() {
             </button>
           )}
           {step > 1 && (
-            <button 
+            <button
               onClick={() => setStep(step - 1)}
               className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white border border-black/5 text-black font-black text-[11px] uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
             >
@@ -272,7 +272,7 @@ export default function Geocercas() {
                   </div>
                 </div>
               ))}
-              <button 
+              <button
                 onClick={handleCreate}
                 className="h-[280px] border-2 border-dashed border-black/10 rounded-[32px] flex flex-col items-center justify-center gap-3 text-black/20 hover:border-brand-orange hover:text-brand-orange hover:bg-brand-orange/5 transition-all"
               >
@@ -289,21 +289,21 @@ export default function Geocercas() {
         <AnimatePresence>
           {isCreating && (
             <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-8">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-black/60 backdrop-blur-md"
                 onClick={() => setIsCreating(false)}
               />
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white rounded-[48px] p-8 md:p-12 shadow-2xl"
               >
-                <Geocerca_crear 
-                  vehiculoId={vehSel.id} 
-                  onBack={() => setIsCreating(false)} 
-                  onSuccess={() => { setIsCreating(false); fetchGeocercas(vehSel.id); }} 
+                <Geocerca_crear
+                  vehiculoId={vehSel.id}
+                  onBack={() => setIsCreating(false)}
+                  onSuccess={() => { setIsCreating(false); fetchGeocercas(vehSel.id); }}
                 />
               </motion.div>
             </div>
@@ -311,21 +311,21 @@ export default function Geocercas() {
 
           {isEditing && (
             <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-8">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-black/60 backdrop-blur-md"
                 onClick={() => setIsEditing(false)}
               />
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white rounded-[48px] p-8 md:p-12 shadow-2xl"
               >
-                <Geocerca_editar 
-                  geocerca={geoSel} 
-                  onBack={() => setIsEditing(false)} 
-                  onSuccess={() => { setIsEditing(false); fetchGeocercas(vehSel.id); }} 
+                <Geocerca_editar
+                  geocerca={geoSel}
+                  onBack={() => setIsEditing(false)}
+                  onSuccess={() => { setIsEditing(false); fetchGeocercas(vehSel.id); }}
                 />
               </motion.div>
             </div>

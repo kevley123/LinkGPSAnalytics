@@ -119,7 +119,6 @@ export const useHandshakeAuth = () => {
       })
       .catch((e) => {
         console.error("Auth validation error:", e);
-        // Error during validation (e.g. network off)
         localStorage.removeItem('auth_token');
         setAuthToken(null);
         setIsAuthenticated(false);
@@ -130,7 +129,5 @@ export const useHandshakeAuth = () => {
           navigate('/home', { replace: true });
         }
       });
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };

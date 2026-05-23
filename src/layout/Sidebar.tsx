@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
@@ -19,8 +19,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const location = useLocation();
   const { notifsCount, alertsCount } = useAppContext();
 
-  // Accordion state: track which sections are expanded
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Principal']));
+  // All sections are expanded by default
+  const [expandedSections] = useState<Set<string>>(() => {
+    return new Set(SIDEBAR_LINKS.map(l => l.section ?? 'General'));
+  });
 
   const isActive = (href: string) => {
     // If it's the root dashboard link, use exact match to avoid staying active on subpages
@@ -41,31 +43,16 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     return acc;
   }, {});
 
-  // Update expanded sections when location changes to ensure the current path's section is open
-  useEffect(() => {
-    const activeLink = SIDEBAR_LINKS.find(l => isActive(l.href));
-    if (activeLink?.section) {
-      setExpandedSections(prev => new Set(prev).add(activeLink.section!));
-    }
-  }, [location.pathname]);
 
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
-      const next = new Set(prev);
-      if (next.has(section)) next.delete(section);
-      else next.add(section);
-      return next;
-    });
-  };
 
   const sidebarContent = (
     <motion.aside
-      className="flex flex-col h-full bg-[#f0f0f5] backdrop-blur-[60px] border-r border-black/5 overflow-hidden"
+      className="flex flex-col h-full bg-white border-r border-black/5 overflow-hidden"
       animate={{ width: open ? SIDEBAR_WIDTH_OPEN : SIDEBAR_WIDTH_CLOSED }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
       {/* Logo row */}
-      <div className="h-20 flex items-center px-6 border-b border-black/5 shrink-0 overflow-hidden bg-black/[0.02]">
+      <div className="h-20 flex items-center px-6 border-b border-black/5 shrink-0 overflow-hidden bg-white">
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
             <motion.img
@@ -113,25 +100,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 flex flex-col gap-2 scrollbar-none">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 flex flex-col gap-1 scrollbar-none">
         {Object.entries(sections).map(([section, links]) => {
           const isExpanded = expandedSections.has(section);
           return (
             <div key={section} className="flex flex-col">
               {/* Section Header */}
               {open && (
-                <button
-                  onClick={() => toggleSection(section)}
-                  className="px-6 py-4 flex items-center justify-between text-[10px] font-black text-black/80 uppercase tracking-[0.25em] hover:text-black transition-colors group"
+                <div
+                  className="px-6 py-2 text-[11px] font-bold text-black/60 tracking-wider"
                 >
                   <span>{section}</span>
-                  <motion.div
-                    animate={{ rotate: isExpanded ? 0 : -90 }}
-                    className="opacity-40 group-hover:opacity-100 transition-opacity"
-                  >
-                    <ChevronLeft size={12} className="rotate-270" />
-                  </motion.div>
-                </button>
+                </div>
               )}
 
               <AnimatePresence initial={false}>
@@ -143,7 +123,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="flex flex-col gap-1 px-3 py-1">
+                    <div className="flex flex-col gap-0.5 px-3 py-0.5">
                       {links.map((link) => {
                         const active = isActive(link.href);
                         const Icon = link.icon;
@@ -152,10 +132,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                             key={link.href}
                             to={link.href}
                             className={clsx(
-                              'relative flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[12px] font-black uppercase tracking-wider transition-all duration-200 group',
+                              'relative flex items-center gap-4 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200 group',
                               active
-                                ? 'bg-black text-white shadow-2xl shadow-black/20 translate-x-1'
-                                : 'text-black/50 hover:text-black hover:bg-black/5',
+                                ? 'bg-black/[0.06] text-black font-bold translate-x-1 shadow-sm'
+                                : 'text-black/60 hover:text-black hover:bg-black/5',
                             )}
                             title={!open ? link.label : undefined}
                           >
