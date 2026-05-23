@@ -11,7 +11,7 @@ import 'leaflet.heat';
 import { useAppContext } from '../context/AppContext';
 import assistantIcon from '../assets/asistente.png';
 import agenteAlertaIcon from '../assets/agente_alerta.png';
-import { env } from '../config/env';
+//import { env } from '../config/env';
 
 // const API_BASE = env.API_BASE_URL;
 const API_BASE = "https://11tkrk1f2zwo.share.zrok.io";
