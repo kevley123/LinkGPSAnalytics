@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
-import { 
+import {
   ShieldCheck,
   Send
 } from 'lucide-react';
@@ -10,9 +10,11 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { useAppContext } from '../context/AppContext';
 import assistantIcon from '../assets/asistente.png';
+import agenteAlertaIcon from '../assets/agente_alerta.png';
 import { env } from '../config/env';
 
-const API_BASE = env.API_BASE_URL;
+// const API_BASE = env.API_BASE_URL;
+const API_BASE = "https://11tkrk1f2zwo.share.zrok.io";
 
 // --- Heatmap Layer Component ---
 const HeatmapLayer = memo(({ points }: { points: any[] }) => {
@@ -20,7 +22,7 @@ const HeatmapLayer = memo(({ points }: { points: any[] }) => {
 
   useEffect(() => {
     if (!points || points.length === 0) return;
-    
+
     // @ts-ignore
     const heat = L.heatLayer(
       points.map(p => [p.lat, p.lon, (p.intensity || 0.5) * 6]),
@@ -30,10 +32,10 @@ const HeatmapLayer = memo(({ points }: { points: any[] }) => {
         maxOpacity: 0.85,
         minOpacity: 0.2,
         gradient: {
-          0.2: '#0000ff', // Blue
-          0.5: '#00ff00', // Green
-          0.8: '#ffff00', // Yellow
-          1.0: '#ff0000'  // Red
+          0.25: '#22c55e', // Green
+          0.5: '#eab308',  // Yellow
+          0.75: '#f97316', // Orange
+          1.0: '#ef4444'   // Red
         }
       }
     ).addTo(map);
@@ -45,7 +47,7 @@ const HeatmapLayer = memo(({ points }: { points: any[] }) => {
 });
 
 // --- Digital Clock Component ---
-const DigitalClock = () => {
+const DigitalClock = ({ light }: { light?: boolean }) => {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -54,28 +56,54 @@ const DigitalClock = () => {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="text-xl font-black text-black tracking-tighter tabular-nums flex items-baseline gap-0.5">
+      <div className={`text-base font-black tracking-tighter tabular-nums flex items-baseline gap-0.5 ${light ? 'text-white' : 'text-black'}`}>
         {time.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false })}
-        <span className="text-brand-orange text-[10px] animate-pulse">
+        <span className="text-brand-orange text-[9px] animate-pulse">
           :{time.getSeconds().toString().padStart(2, '0')}
         </span>
       </div>
-      <div className="w-px h-5 bg-black/10" />
-      <div className="text-[8px] font-black text-black/40 uppercase tracking-widest leading-none">
-        Misión<br />Crítica
+      <div className={`w-px h-4 ${light ? 'bg-white/20' : 'bg-black/10'}`} />
+      <div className={`text-[8px] font-black uppercase tracking-widest leading-none ${light ? 'text-white/40' : 'text-black/40'}`}>
+        LInk<br />GPS
       </div>
     </div>
   );
 };
 
-const chatbotMessage = `Hola. Analizando el mapa térmico de anomalías vehiculares de Bolivia, he identificado las zonas de mayor peligro y riesgo elevado para dejar tu vehículo estacionado en la calle sin supervisión:
+interface Message {
+  sender: 'user' | 'assistant';
+  text: string;
+  isAnimating?: boolean;
+}
 
-1. El Alto (Feria 16 de Julio y Zona 12 de Octubre): Mayor tasa de robos y sustracción de autopartes.
-2. La Paz (Zonas de San Pedro y el Cementerio General): Reportes constantes de vulnerabilidad nocturna.
-3. Santa Cruz (Zonas de La Ramada y el Mercado Mutualista): Puntos negros para el robo estacionario.
-4. Cochabamba (Alrededores de La Cancha y Avenida Aroma): Frecuentes anomalías registradas en nuestro sistema.
+// --- Typewriter Text Component ---
+const TypewriterText = ({ text, onComplete }: { text: string; onComplete: () => void }) => {
+  const [displayed, setDisplayed] = useState('');
 
-Te aconsejo establecer alertas de geocercas inteligentes y monitorear activamente estas coordenadas.`;
+  useEffect(() => {
+    let idx = 0;
+    setDisplayed('');
+    const timer = setInterval(() => {
+      if (idx < text.length) {
+        setDisplayed((prev) => prev + text.charAt(idx));
+        idx++;
+      } else {
+        clearInterval(timer);
+        onComplete();
+      }
+    }, 12);
+    return () => clearInterval(timer);
+  }, [text]);
+
+  return (
+    <span>
+      {displayed}
+      {displayed.length < text.length && (
+        <span className="inline-block w-1.5 h-3.5 ml-1 bg-brand-orange animate-pulse align-middle" />
+      )}
+    </span>
+  );
+};
 
 export default function Dashboard() {
   const { user, authToken } = useAppContext();
@@ -87,22 +115,97 @@ export default function Dashboard() {
     riskScore: 6.4
   });
 
-  const [displayText, setDisplayText] = useState('');
-  
-  // Simulated AI response typewriter effect
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isTypingResponse, setIsTypingResponse] = useState(true);
+  const [isWaitingForAPI, setIsWaitingForAPI] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+
+  // Initialize compact greeting message on load
   useEffect(() => {
-    let index = 0;
-    setDisplayText('');
-    const timer = setInterval(() => {
-      if (index < chatbotMessage.length) {
-        setDisplayText((prev) => prev + chatbotMessage.charAt(index));
-        index++;
-      } else {
-        clearInterval(timer);
+    if (messages.length === 0) {
+      const name = user?.name?.split(' ')[0] ?? 'Operador';
+      setMessages([
+        {
+          sender: 'assistant',
+          text: `¡Hola, ${name}! ¿En qué te puedo ayudar hoy? ¿Deseas consultar sobre alguna zona de riesgo o la zona roja para hoy?, o deseas conocer las alertas de tus vehiculos, rutas, dímelo`,
+          isAnimating: true
+        }
+      ]);
+    }
+  }, [user, messages.length]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || isTypingResponse || isWaitingForAPI) return;
+
+    const userText = inputValue;
+    setInputValue('');
+
+    // Add user bubble
+    setMessages((prev) => [...prev, { sender: 'user', text: userText }]);
+    setIsWaitingForAPI(true);
+
+    let replyText = '';
+    try {
+      // POST "message" to /chatbot/ask
+      let res = await fetch(`${API_BASE}/api/analytics/chatbot/ask`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: userText })
+      });
+
+      // Try root endpoint fallback
+      if (!res.ok) {
+        res = await fetch(`${API_BASE}/chatbot/ask`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: userText })
+        });
       }
-    }, 15);
-    return () => clearInterval(timer);
-  }, []);
+
+      if (res.ok) {
+        const json = await res.json();
+        const responseMsg = json.response || '';
+        const recommendationsMsg = json.recommendations || '';
+        const riskScoreVal = json.risk_score;
+
+        let parts: string[] = [];
+        if (responseMsg) {
+          parts.push(responseMsg);
+        }
+        if (recommendationsMsg) {
+          parts.push(`\n**Recomendaciones:**\n${recommendationsMsg}`);
+        }
+        if (riskScoreVal !== undefined && riskScoreVal !== null && parseFloat(riskScoreVal) > 0.0) {
+          parts.push(`\n**Nivel de Riesgo:** ${riskScoreVal} / 10`);
+        }
+        replyText = parts.join('\n');
+      }
+    } catch (err) {
+      console.warn("API Chatbot ask endpoint error:", err);
+    }
+
+    // Error handling requirement
+    if (!replyText) {
+      replyText = "En estos momentos no estoy disponible. Por favor, intentalo más tarde.";
+    }
+
+    // Wait simulated network delay
+    setTimeout(() => {
+      setIsWaitingForAPI(false);
+      setIsTypingResponse(true);
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'assistant', text: replyText, isAnimating: true }
+      ]);
+    }, 1000);
+  };
 
   useEffect(() => {
     if (!authToken) return;
@@ -124,86 +227,136 @@ export default function Dashboard() {
   }, [authToken]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.9fr] gap-6 h-[calc(100vh-100px)] w-full pb-4">
-      {/* Left Column (Info Panel + Chatbot) */}
-      <div className="flex flex-col gap-6 h-full overflow-hidden">
-        
-        {/* Left Top Card: User Info & Digital Clock */}
+    <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.9fr] gap-4 h-[calc(100vh-172px)] w-full text-black overflow-hidden">
+      {/* Left Column (Info Panel + Chatbot) - Added padding to let the RGB shadow breathe */}
+      <div className="flex flex-col gap-4 h-full overflow-hidden px-3.5 py-2">
+
+        {/* Left Top Card: White & Compact with larger text */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[32px] border-4 border-black/5 p-6 shadow-sm flex flex-col justify-between"
+          className="bg-white border-4 border-black/5 p-3.5 rounded-[28px] shadow-sm flex flex-col justify-between shrink-0 h-[122px]"
         >
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black text-black leading-tight">Bienvenido, {user?.name?.split(' ')[0] ?? 'Operator'}</h2>
-              <p className="text-[9px] font-black text-black/40 uppercase tracking-widest mt-1">Panel de control y seguridad</p>
+              <h2 className="text-base font-black text-black leading-none">
+                Bienvenido, {user?.name?.split(' ')[0] ?? 'Operador'}
+              </h2>
+              <p className="text-[9px] font-black text-brand-orange uppercase tracking-widest mt-1.5 leading-none">
+                DASHBOARD DE LINK ANALYTICS
+              </p>
             </div>
-            <div className="bg-black/5 rounded-2xl px-4 py-2 border border-black/5 shrink-0">
-              <DigitalClock />
+            <div className="bg-black/5 rounded-xl px-2.5 py-1 border border-black/5 shrink-0">
+              <DigitalClock light={false} />
             </div>
           </div>
-          
-          <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-black/5">
-            <div className="bg-[#f8f9fa] p-3 rounded-2xl border border-black/5 flex flex-col justify-between">
-              <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Alertas IA</span>
-              <span className="text-lg font-black text-brand-orange mt-1">{stats.alerts}</span>
+
+          <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-black/5">
+            <div className="bg-[#f8f9fa] p-1.5 rounded-lg border border-black/5 flex flex-col justify-between">
+              <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block leading-none">Alertas Inteligentes</span>
+              <span className="text-xs font-black text-brand-orange mt-0.5 leading-none">{stats.alerts}</span>
             </div>
-            <div className="bg-[#f8f9fa] p-3 rounded-2xl border border-black/5 flex flex-col justify-between">
-              <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Anomalías</span>
-              <span className="text-lg font-black text-black mt-1">{stats.anomalies}</span>
+            <div className="bg-[#f8f9fa] p-1.5 rounded-lg border border-black/5 flex flex-col justify-between">
+              <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block leading-none">Anomalías</span>
+              <span className="text-xs font-black text-black mt-0.5 leading-none">{stats.anomalies}</span>
             </div>
-            <div className="bg-[#f8f9fa] p-3 rounded-2xl border border-black/5 flex flex-col justify-between">
-              <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Risk Score</span>
-              <span className="text-lg font-black text-brand-orange mt-1">{stats.riskScore}</span>
+            <div className="bg-[#f8f9fa] p-1.5 rounded-lg border border-black/5 flex flex-col justify-between">
+              <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block leading-none">Riesgo</span>
+              <span className="text-xs font-black text-brand-orange mt-0.5 leading-none">{stats.riskScore}</span>
             </div>
           </div>
         </motion.div>
 
-        {/* Left Bottom Card: Chatbot */}
+        {/* Left Bottom Card: Chatbot with dynamic RGB box shadow glow */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="flex-1 bg-white rounded-[32px] border-4 border-black/5 p-6 shadow-sm flex flex-col justify-between overflow-hidden"
+          transition={{ delay: 0.1 }}
+          className="flex-1 bg-white rounded-[28px] border-4 p-4 flex flex-col justify-between overflow-hidden rgb-glow-card"
         >
-          <div className="flex flex-col h-full gap-4 overflow-hidden">
+          <div className="flex flex-col h-full gap-3 overflow-hidden">
             {/* Chat Header */}
-            <div className="flex items-center gap-3 border-b border-black/5 pb-4 shrink-0">
-              <img src={assistantIcon} className="w-10 h-10 rounded-full border-2 border-brand-orange object-cover shadow-sm" alt="Asistente" />
+            <div className="flex items-center gap-3 border-b border-black/5 pb-3 shrink-0">
+              <img src={assistantIcon} className="w-8 h-8 rounded-full border-2 border-brand-orange object-cover shadow-sm" alt="Asistente" />
               <div>
-                <h3 className="text-sm font-black text-black leading-none">Asistente de Seguridad IA</h3>
-                <span className="text-[9px] font-black text-green-500 uppercase tracking-widest flex items-center gap-1.5 mt-1.5">
+                <h3 className="text-sm font-black text-black leading-none">Agente Conversacional LINK</h3>
+                <span className="text-[9px] font-black text-green-500 uppercase tracking-widest flex items-center gap-1.5 mt-1 leading-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Activo
                 </span>
               </div>
             </div>
 
-            {/* Chat Message Stream */}
-            <div className="flex-1 overflow-y-auto pr-1 space-y-4 scrollbar-none">
-              <div className="flex items-start gap-3">
-                <img src={assistantIcon} className="w-7 h-7 rounded-full border border-black/5 object-cover mt-0.5 shrink-0" />
-                <div className="bg-[#f8f9fa] border border-black/5 p-4 rounded-3xl rounded-tl-none text-[11px] text-black leading-relaxed font-semibold whitespace-pre-line">
-                  {displayText}
-                  {displayText.length < chatbotMessage.length && (
-                    <span className="inline-block w-1.5 h-3.5 ml-1 bg-brand-orange animate-pulse align-middle" />
-                  )}
+            {/* Chat Message Stream - Font size changed from 10px to 12px (text-xs) */}
+            <div className="flex-1 overflow-y-auto pr-1 space-y-3 scrollbar-none">
+              {messages.map((msg, index) => {
+                const isUser = msg.sender === 'user';
+                return (
+                  <div key={index} className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}>
+                    {isUser ? (
+                      <div className="w-6 h-6 rounded-full bg-brand-orange text-white flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5">
+                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    ) : (
+                      <img src={assistantIcon} className="w-6 h-6 rounded-full border border-black/5 object-cover mt-0.5 shrink-0" />
+                    )}
+
+                    <div className={`p-3 rounded-2xl text-xs leading-relaxed font-semibold whitespace-pre-line max-w-[85%] ${isUser
+                      ? 'bg-black text-white rounded-tr-none'
+                      : 'bg-[#f8f9fa] border border-[#eef0f2] text-black rounded-tl-none'
+                      }`}>
+                      {msg.isAnimating ? (
+                        <TypewriterText
+                          text={msg.text}
+                          onComplete={() => {
+                            setMessages(prev => prev.map((m, i) => i === index ? { ...m, isAnimating: false } : m));
+                            setIsTypingResponse(false);
+                          }}
+                        />
+                      ) : (
+                        msg.text
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Waiting for API response */}
+              {isWaitingForAPI && (
+                <div className="flex items-start gap-2.5">
+                  <img src={assistantIcon} className="w-6 h-6 rounded-full border border-black/5 object-cover mt-0.5 shrink-0" />
+                  <div className="bg-[#f8f9fa] border border-[#eef0f2] p-3 rounded-2xl rounded-tl-none text-xs text-black/40 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Chat Input */}
-            <div className="flex items-center gap-2 border-t border-black/5 pt-3 shrink-0">
-              <input 
-                type="text" 
-                placeholder="Pregunta sobre zonas de riesgo..." 
-                className="flex-1 bg-[#f8f9fa] border border-black/5 rounded-2xl px-4 py-3 text-xs font-bold focus:outline-none focus:border-brand-orange text-black"
-                disabled
+            {/* Chat Input form */}
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2 border-t border-black/5 pt-2.5 shrink-0">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder={
+                  isTypingResponse
+                    ? "Escribiendo..."
+                    : isWaitingForAPI
+                      ? "Buscando..."
+                      : "Consultar zona de riesgo..."
+                }
+                className="flex-1 bg-[#f8f9fa] border border-black/5 rounded-xl px-3.5 py-2.5 text-xs font-bold focus:outline-none focus:border-brand-orange text-black disabled:opacity-50"
+                disabled={isTypingResponse || isWaitingForAPI}
               />
-              <button className="p-3 bg-black hover:bg-neutral-800 text-white rounded-2xl transition-all cursor-not-allowed" disabled>
-                <Send size={14} />
+              <button
+                type="submit"
+                className="p-2.5 bg-black hover:bg-neutral-800 text-white rounded-xl transition-all disabled:opacity-30"
+                disabled={!inputValue.trim() || isTypingResponse || isWaitingForAPI}
+              >
+                <Send size={12} />
               </button>
-            </div>
+            </form>
           </div>
         </motion.div>
 
@@ -211,17 +364,17 @@ export default function Dashboard() {
 
       {/* Right Column (Leaflet Map) */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
+        initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white rounded-[32px] border-4 border-black/5 overflow-hidden shadow-2xl relative h-full flex flex-col"
+        transition={{ delay: 0.15 }}
+        className="bg-white rounded-[28px] border-4 border-black/5 overflow-hidden shadow-2xl relative h-full flex flex-col"
       >
         <div className="flex-1 z-0 relative">
           <MapContainer
-            center={[-16.5, -66.0]} 
+            center={[-16.5, -66.0]}
             zoom={7}
             zoomControl={false}
-            className="h-full w-full animate-fade-in"
+            className="h-full w-full"
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -231,32 +384,66 @@ export default function Dashboard() {
           </MapContainer>
 
           {/* Floating Live Tag */}
-          <div className="absolute top-6 left-6 z-[1000]">
-            <div className="bg-white/95 backdrop-blur-xl px-5 py-3 rounded-2xl border border-black/5 flex items-center gap-3 shadow-xl">
-              <div className="w-8 h-8 rounded-xl bg-brand-orange flex items-center justify-center text-white">
-                <ShieldCheck size={18} />
+          <div className="absolute top-4 left-4 z-[1000]">
+            <div className="bg-white/95 backdrop-blur-xl px-4 py-2.5 rounded-xl border border-black/5 flex items-center gap-2.5 shadow-xl">
+              <div className="w-7 h-7 rounded-lg bg-brand-orange flex items-center justify-center text-white">
+                <ShieldCheck size={16} />
               </div>
               <div>
-                <p className="text-[9px] font-black text-black/40 uppercase tracking-widest leading-none">Monitoreo Nacional</p>
-                <p className="text-[11px] font-black text-black uppercase mt-1">Zonas Rojas Bolivia</p>
+                <p className="text-[8px] font-black text-black/40 uppercase tracking-widest leading-none">Monitoreo Nacional</p>
+                <p className="text-[10px] font-black text-black uppercase mt-1 leading-none">Zonas Rojas Bolivia</p>
               </div>
             </div>
           </div>
 
-          {/* Shrunken Legend / IA Status Overlay */}
-          <div className="absolute bottom-6 right-6 z-[1000] w-64">
-            <div className="bg-white/95 backdrop-blur-xl border border-black/5 rounded-2xl p-4 flex flex-col gap-2 shadow-2xl">
-              <div className="flex items-center justify-between text-[9px] font-black text-black/40 uppercase tracking-widest">
-                <span>IA Engine:</span>
-                <span className="text-green-500 flex items-center gap-1">Online</span>
-              </div>
-              <p className="text-black/60 text-[9px] leading-normal font-medium">
-                Mapa térmico predictivo basado en analítica geoespacial para la detección de robos y anomalías.
+          {/* Agent Alerta Floating in bottom-right corner with Monospace bubble (Larger avatar) */}
+          <div className="absolute bottom-4 right-4 z-[1000] flex items-end gap-3 pointer-events-none">
+            {/* Robot Speech Bubble */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, x: 10 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white/95 backdrop-blur-md border border-black/5 rounded-2xl p-3.5 shadow-xl max-w-[280px] pointer-events-auto relative shrink-0"
+            >
+              <div className="absolute right-[-5px] bottom-10 w-2.5 h-2.5 bg-white rotate-45 border-r border-t border-black/5" />
+              <p className="font-mono text-[8px] font-black text-brand-orange uppercase tracking-widest leading-none">
+                Agente Alerta [IA]
               </p>
-            </div>
+              <p className="font-mono text-[9px] text-neutral-800 leading-relaxed font-bold mt-2">
+                Este mapa térmico representa el índice nacional de anomalías y vulnerabilidades de vehículos en Bolivia en tiempo real.
+                <br /><br />
+                Las zonas rojas indican un alto índice de incidentes de sustracción y eventos de SOS monitoreadas por LinkGPS.
+              </p>
+            </motion.div>
+
+            {/* Floating Agent Image - MUCH LARGER */}
+            <motion.img
+              src={agenteAlertaIcon}
+              alt="Agente Alerta"
+              animate={{ y: [0, -8, 0] }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="w-28 h-28 rounded-full border-4 border-brand-orange/60 object-cover shadow-2xl pointer-events-auto bg-white shrink-0"
+            />
           </div>
         </div>
       </motion.div>
+
+      {/* Dynamic CSS styles for RGB shadows */}
+      <style>{`
+        @keyframes rgbGlow {
+          0% { box-shadow: 0 0 25px 6px rgba(239, 68, 68, 0.6); border-color: rgba(239, 68, 68, 0.15); }
+          33% { box-shadow: 0 0 25px 6px rgba(34, 197, 94, 0.6); border-color: rgba(34, 197, 94, 0.15); }
+          66% { box-shadow: 0 0 25px 6px rgba(59, 130, 246, 0.6); border-color: rgba(59, 130, 246, 0.15); }
+          100% { box-shadow: 0 0 25px 6px rgba(239, 68, 68, 0.6); border-color: rgba(239, 68, 68, 0.15); }
+        }
+        .rgb-glow-card {
+          animation: rgbGlow 6s infinite ease-in-out;
+        }
+      `}</style>
     </div>
   );
 }
