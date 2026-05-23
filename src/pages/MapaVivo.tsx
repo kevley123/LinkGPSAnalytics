@@ -3,11 +3,11 @@ import { createPortal } from 'react-dom';
 import {
     Car, MapPin, RefreshCw, Loader2, X,
     ChevronLeft, AlertCircle, Satellite,
-    Signal, ArrowRight
+    Signal, ArrowRight, Info
 } from 'lucide-react';
 import {
     MapContainer, TileLayer, Marker, Popup,
-    LayersControl, Circle, useMap
+    Circle, useMap
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -17,26 +17,25 @@ import { env } from '../config/env';
 
 const API_BASE = env.API_BASE_URL;
 
-// ── Custom SVG Icon for the marker (Deep Tech Orange) ──────────────────────────
+// ── Custom SVG Icon for the marker (Circular White Badge with Orange Border) ──────────────────
 const createVehicleIcon = (color = '#F97316') => new L.DivIcon({
     className: '',
     html: `
-    <div style="position:relative;width:42px;height:52px;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.5))">
-      <svg viewBox="0 0 42 52" fill="none" xmlns="http://www.w3.org/2000/svg" width="42" height="52">
-        <ellipse cx="21" cy="49" rx="8" ry="3" fill="rgba(0,0,0,0.3)"/>
-        <path d="M21 2C12.163 2 5 9.163 5 18c0 10.5 16 32 16 32S37 28.5 37 18C37 9.163 29.837 2 21 2z"
-          fill="${color}" stroke="white" stroke-width="2"/>
-        <circle cx="21" cy="18" r="7" fill="black" fill-opacity="0.8"/>
-        <g transform="translate(15,12)">
-           <path d="M5 1L5 5L1 5a1 1 0 0 0 0 2L5 7L5 11a1 1 0 0 0 2 0L7 7L11 7a1 1 0 0 0 0-2L7 5L7 1a1 1 0 0 0-2 0z" fill="white"/>
-        </g>
-      </svg>
-      <div class="animate-ping" style="position:absolute;top:6px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:white;opacity:0.6"></div>
+    <div style="position:relative;width:40px;height:40px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))">
+      <div class="animate-ping" style="position:absolute;inset:0;border-radius:50%;background:${color};opacity:0.2"></div>
+      <div style="position:absolute;width:32px;height:32px;border-radius:50%;background:white;border:3px solid ${color};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.1)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h1" />
+          <circle cx="7" cy="17" r="2" />
+          <path d="M9 17h6" />
+          <circle cx="17" cy="17" r="2" />
+        </svg>
+      </div>
     </div>
   `,
-    iconSize: [42, 52],
-    iconAnchor: [21, 50],
-    popupAnchor: [0, -52],
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+    popupAnchor: [0, -20],
 });
 
 // ── Update View component ─────────────────────────────────────────────────────
@@ -50,10 +49,9 @@ const ViewUpdater = ({ lat, lng }: { lat: number; lng: number }) => {
     return null;
 };
 
-
 const fmtFullDate = (date: string | null) => {
     if (!date) return '—';
-    return new Date(date).toLocaleString('es-ES', {
+    return new Date(date).toLocaleString('es-BO', {
         day: '2-digit', month: 'short', year: 'numeric',
         hour: '2-digit', minute: '2-digit',
     });
@@ -67,21 +65,21 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
         disabled={loading}
         className={`group relative w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200
       ${selected
-                ? 'border-brand-orange bg-brand-orange/10 shadow-[0_0_15px_-5px_rgba(249,115,22,0.3)]'
-                : 'border-white/5 bg-white/5 hover:border-white/10'
+                ? 'border-brand-orange bg-brand-orange/5 shadow-sm'
+                : 'border-black/5 bg-black/[0.02] hover:border-black/10 hover:bg-black/[0.04]'
             } ${loading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
     >
-        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5">
-            <Car className={selected ? 'text-brand-orange' : 'text-neutral-600'} size={18} />
+        <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center border border-black/5 shadow-sm">
+            <Car className={selected ? 'text-brand-orange' : 'text-neutral-500'} size={16} />
         </div>
         <div className="flex-1 min-w-0">
-            <p className="text-sm font-black text-white truncate uppercase tracking-tight">{veh.modelo}</p>
+            <p className="text-xs font-black text-black truncate uppercase tracking-tight">{veh.modelo}</p>
             <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[9px] font-black text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded uppercase tracking-widest">{veh.placa}</span>
+                <span className="text-[9px] font-bold text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded tracking-wide">{veh.placa}</span>
             </div>
         </div>
         <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all
-      ${selected ? 'bg-brand-orange text-white' : 'bg-white/5 text-neutral-600'}`}>
+      ${selected ? 'bg-brand-orange text-white' : 'bg-black/5 text-neutral-500'}`}>
             {loading ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
         </div>
     </button>
@@ -90,43 +88,43 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
 // ── Map Info Panel ───────────────────────────────────────────────────────────
 const InfoPanel = memo(({ veh, location, onRefresh, loading }: any) => (
     <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="bg-white/5 backdrop-blur-2xl border border-white/10 p-4 rounded-[28px] space-y-3 shadow-3xl"
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white border-4 border-black/5 p-4 rounded-[28px] space-y-3 shadow-2xl"
     >
         <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-brand-orange/20 flex items-center justify-center border border-brand-orange/30">
-                <Signal className="text-brand-orange animate-pulse" size={16} />
+            <div className="w-8 h-8 rounded-xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
+                <Signal className="text-brand-orange animate-pulse" size={14} />
             </div>
             <div className="flex-1">
-                <p className="text-[9px] text-neutral-500 uppercase font-black tracking-widest">Sistema Live</p>
-                <p className="text-sm font-black text-white uppercase tracking-tight leading-none">{veh?.modelo}</p>
+                <p className="text-[8px] text-black/40 uppercase font-black tracking-widest leading-none">Sistema en vivo</p>
+                <p className="text-xs font-black text-black uppercase tracking-tight leading-none mt-1">{veh?.modelo}</p>
             </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
             {[
-                { label: 'LAT', val: location?.latitud ? parseFloat(location.latitud).toFixed(5) : '—' },
-                { label: 'LON', val: location?.longitud ? parseFloat(location.longitud).toFixed(5) : '—' },
+                { label: 'Latitud', val: location?.latitud ? parseFloat(location.latitud).toFixed(5) : '—' },
+                { label: 'Longitud', val: location?.longitud ? parseFloat(location.longitud).toFixed(5) : '—' },
             ].map(({ label, val }) => (
-                <div key={label} className="bg-black/40 rounded-xl px-3 py-2 border border-white/5">
-                    <p className="text-[8px] font-black text-neutral-600 uppercase tracking-widest mb-0.5">{label}</p>
-                    <p className="text-[11px] font-mono font-bold text-white">{val}</p>
+                <div key={label} className="bg-[#f8f9fa] rounded-xl px-3 py-1.5 border border-black/5">
+                    <p className="text-[8px] font-black text-black/40 uppercase tracking-widest mb-0.5">{label}</p>
+                    <p className="text-[10px] font-mono font-bold text-black">{val}</p>
                 </div>
             ))}
         </div>
 
-        <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-4">
+        <div className="pt-2 border-t border-black/5 flex items-center justify-between gap-4">
             <div className="flex flex-col">
-                <span className="text-[8px] text-neutral-600 uppercase font-black tracking-tighter">Último contacto</span>
-                <span className="text-[10px] text-white/60 font-medium uppercase">{fmtFullDate(location?.fecha)}</span>
+                <span className="text-[8px] text-black/40 uppercase font-black tracking-tighter">Último contacto</span>
+                <span className="text-[9px] text-black/60 font-semibold">{fmtFullDate(location?.fecha)}</span>
             </div>
             <button
                 onClick={onRefresh}
                 disabled={loading}
-                className="w-8 h-8 rounded-lg bg-brand-orange text-white flex items-center justify-center hover:bg-brand-orange-light transition-all shadow-lg active:scale-90"
+                className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center hover:bg-neutral-800 transition-all shadow-lg active:scale-95"
             >
-                <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
             </button>
         </div>
     </motion.div>
@@ -140,46 +138,46 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-brand-dark/90 backdrop-blur-md"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={onClose}
             />
             <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="relative w-full max-w-sm bg-brand-dark-2 rounded-[32px] overflow-hidden border border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.8)]"
+                className="relative w-full max-w-sm bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-[0_32px_80px_rgba(0,0,0,0.15)]"
             >
-                <div className="bg-gradient-to-br from-red-500 to-red-700 p-8 flex flex-col items-center text-center gap-4">
-                    <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
-                        <X size={20} />
+                <div className="bg-gradient-to-br from-red-500 to-red-600 p-8 flex flex-col items-center text-center gap-4">
+                    <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+                        <X size={18} />
                     </button>
-                    <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border border-white/20 relative">
+                    <div className="w-16 h-16 rounded-full bg-white/15 flex items-center justify-center border border-white/20 relative">
                         <motion.div
                             animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
                             transition={{ duration: 2, repeat: Infinity }}
                             className="absolute inset-0 rounded-full bg-white/20"
                         />
-                        <AlertCircle size={40} className="text-white relative z-10" />
+                        <AlertCircle size={32} className="text-white relative z-10" />
                     </div>
                     <div>
-                        <p className="text-xs font-black text-white/60 uppercase tracking-[0.2em] mb-1">Acceso Denegado</p>
-                        <h3 className="text-2xl font-black text-white">Análisis Inactivo</h3>
+                        <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.15em] mb-1">Acceso denegado</p>
+                        <h3 className="text-xl font-black text-white">Análisis inactivo</h3>
                     </div>
                 </div>
 
-                <div className="p-8 space-y-6">
-                    <p className="text-neutral-400 text-sm leading-relaxed text-center">
+                <div className="p-6 space-y-5">
+                    <p className="text-neutral-500 text-xs leading-relaxed text-center font-medium">
                         {message}
                     </p>
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-2">
                         <button
                             onClick={onSolicitar}
-                            className="w-full py-4 rounded-2xl bg-brand-orange hover:bg-brand-orange-light text-white font-black text-sm transition-all shadow-lg shadow-brand-orange/20 flex items-center justify-center gap-2"
+                            className="w-full py-3 rounded-xl bg-black hover:bg-neutral-800 text-white font-black text-xs transition-all shadow-md flex items-center justify-center gap-2"
                         >
-                            <Satellite size={16} /> REVISAR SERVICIO
+                            <Satellite size={14} /> Revisar servicio
                         </button>
                         <button
                             onClick={onClose}
-                            className="w-full py-3 text-neutral-500 hover:text-white font-bold text-sm transition-colors"
+                            className="w-full py-2.5 text-neutral-400 hover:text-black font-bold text-xs transition-colors"
                         >
                             Cerrar
                         </button>
@@ -193,7 +191,6 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
 
 export default function MapaVivo() {
     const { authToken } = useAppContext();
-    // const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
     const [vehicles, setVehicles] = useState<any[]>([]);
@@ -259,162 +256,167 @@ export default function MapaVivo() {
     const hasCoords = lat !== null && lng !== null;
 
     return (
-        <div className="p-3 md:p-4 text-white min-h-screen max-w-7xl mx-auto flex flex-col gap-4">
+        <div className="text-black h-[calc(100vh-172px)] flex flex-col gap-4 overflow-hidden p-2">
+            
+            {/* Header Layout */}
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between gap-4 px-2"
+                className="flex items-center justify-between gap-4 px-2 shrink-0"
             >
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20">
                         <MapPin className="text-brand-orange" size={20} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-white tracking-tight leading-none">Mapa en vivo</h1>
-                        <p className="text-xs font-medium text-neutral-500 mt-1.5">Seguimiento geoespacial de flotas en tiempo real</p>
+                        <h1 className="text-2xl font-black text-black tracking-tight leading-none">Mapa en vivo</h1>
+                        <p className="text-xs font-semibold text-black/40 mt-1.5">Seguimiento geoespacial de flotas en tiempo real</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1 bg-white/5 backdrop-blur-md p-1 rounded-xl border border-white/5">
-                    {[1, 2].map((s) => (
-                        <div key={s} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${step === s ? 'bg-brand-orange text-white' : 'text-neutral-500'
-                            }`}>
-                            Step {s}
-                        </div>
-                    ))}
+                <div className="flex items-center gap-2">
+                    {vehSel && (
+                        <button
+                            onClick={() => { setStep(1); setVehSel(null); setLocation(null); }}
+                            className="px-4 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
+                        >
+                            <ChevronLeft size={14} />
+                            Cambiar vehículo
+                        </button>
+                    )}
                 </div>
             </motion.div>
 
-            <div className="flex-1 min-h-0 flex flex-col gap-4">
-                {step === 1 ? (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 overflow-y-auto pr-2 scrollbar-none"
-                    >
-                        {loadingVeh ? (
-                            [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-20 rounded-2xl bg-white/5 animate-pulse border border-white/5" />)
-                        ) : vehicles.length === 0 ? (
-                            <div className="col-span-full py-20 text-center bg-white/5 rounded-[40px] border border-white/5">
-                                <Car className="mx-auto text-neutral-800 mb-4" size={50} />
-                                <h3 className="text-lg font-black text-white uppercase tracking-widest">Sin Unidades</h3>
-                                <p className="text-neutral-500 text-xs">No hay vehículos vinculados.</p>
+            {/* Main Interactive Map / Selection Panel */}
+            <div className="flex-1 min-h-0 relative rounded-[32px] overflow-hidden border border-black/5 bg-[#f8f9fa] shadow-2xl flex flex-col">
+                
+                {/* Always Render Map (renders placeholder or maps once coords loaded) */}
+                <div className="w-full h-full relative flex-1">
+                    {hasCoords ? (
+                        <MapContainer
+                            center={[lat, lng]}
+                            zoom={16}
+                            style={{ width: '100%', height: '100%' }}
+                            zoomControl={false}
+                            className="map-main-instance"
+                        >
+                            {/* Standard Colored OSM Street Tile Layer */}
+                            <TileLayer 
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                attribution='&copy; OpenStreetMap contributors'
+                            />
+
+                            <ViewUpdater lat={lat} lng={lng} />
+
+                            <Circle
+                                center={[lat, lng]}
+                                radius={80}
+                                pathOptions={{ color: '#F97316', fillColor: '#F97316', fillOpacity: 0.1, weight: 1.5 }}
+                            />
+
+                            <Marker position={[lat, lng]} icon={iconRef.current}>
+                                <Popup>
+                                    <div className="text-center font-bold text-black p-1">
+                                        <div className="text-sm font-black border-b border-black/5 pb-1 mb-1">{vehSel?.modelo}</div>
+                                        <div className="text-[10px] text-brand-orange font-black uppercase tracking-widest">{vehSel?.placa}</div>
+                                        <div className="mt-2 pt-2 border-t border-black/5 flex flex-col gap-0.5">
+                                            <div className="text-[9px] font-mono text-neutral-500">Latitud: {lat.toFixed(6)}</div>
+                                            <div className="text-[9px] font-mono text-neutral-500">Longitud: {lng.toFixed(6)}</div>
+                                        </div>
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        </MapContainer>
+                    ) : (
+                        // Map placeholder background when no vehicle is active
+                        <div className="w-full h-full bg-[#f1f3f5] flex items-center justify-center relative">
+                            <div className="absolute inset-0 opacity-10" style={{
+                                backgroundImage: `radial-gradient(circle, #000 10%, transparent 11%), radial-gradient(circle, #000 10%, transparent 11%)`,
+                                backgroundSize: '20px 20px',
+                                backgroundPosition: '0 0, 10px 10px'
+                            }} />
+                            <div className="flex flex-col items-center gap-2 text-center z-10 px-4">
+                                <MapPin size={42} className="text-black/15 animate-bounce" />
+                                <p className="text-xs font-bold text-black/30 uppercase tracking-wider">Esperando conexión satelital...</p>
                             </div>
-                        ) : (
-                            vehicles.map(v => (
-                                <VehicleChip
-                                    key={v.id}
-                                    veh={v}
-                                    selected={vehSel?.id === v.id}
-                                    loading={loadingLoc && vehSel?.id === v.id}
-                                    onSelect={onSelectVehicle}
-                                />
-                            ))
-                        )}
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex-1 flex flex-col gap-3 min-h-0"
-                    >
-                        <div className="flex items-center justify-between">
-                            <button
-                                onClick={() => { setStep(1); setVehSel(null); setLocation(null); }}
-                                className="flex items-center gap-2 text-neutral-500 hover:text-white font-black text-[9px] uppercase tracking-[0.2em] transition-colors"
+                        </div>
+                    )}
+
+                    {/* Live Info Panel Overlay (Only in Step 2) */}
+                    {hasCoords && step === 2 && (
+                        <div className="absolute bottom-4 left-4 z-[1000] w-64 max-w-[90%]">
+                            <InfoPanel
+                                veh={vehSel}
+                                location={location}
+                                loading={loadingLoc}
+                                onRefresh={() => fetchLocation(vehSel.id)}
+                            />
+                        </div>
+                    )}
+
+                    {/* Live Status Badge Overlay (Only in Step 2) */}
+                    {hasCoords && step === 2 && (
+                        <div className="absolute top-4 right-4 z-[1000]">
+                            <div className="bg-white border border-black/5 text-black text-[9px] font-black px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
+                                En vivo
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* STEP 1: Modal emergente (Vehicle Selection Dialog overlay) */}
+                <AnimatePresence>
+                    {step === 1 && (
+                        <div className="absolute inset-0 z-[1001] bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.95, opacity: 0, y: 15 }}
+                                className="bg-white border-4 border-black/5 rounded-[32px] p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 overflow-hidden max-h-[90%]"
                             >
-                                <ChevronLeft size={14} /> Volver
-                            </button>
-                            <div className="flex items-center gap-2">
-                                <div className="flex -space-x-1.5">
-                                    {vehicles.slice(0, 5).map(v => (
-                                        <button
-                                            key={v.id}
-                                            onClick={() => onSelectVehicle(v)}
-                                            className={`w-7 h-7 rounded-full border border-black flex items-center justify-center transition-transform hover:scale-110 ${vehSel?.id === v.id ? 'bg-brand-orange text-white' : 'bg-white/5 text-neutral-500 shadow-xl'
-                                                }`}
-                                        >
-                                            <Car size={10} />
-                                        </button>
-                                    ))}
+                                <div className="flex items-start gap-3">
+                                    <div className="w-9 h-9 rounded-xl bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20 shrink-0">
+                                        <Info className="text-brand-orange" size={18} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-black text-black leading-none">Seleccionar vehículo</h3>
+                                        <p className="text-neutral-500 text-xs font-semibold mt-1 leading-relaxed">
+                                            Para comenzar con el rastreo satelital en tiempo real, por favor seleccione el vehículo de su flota que desea monitorear. Esto nos permitirá establecer una conexión telemétrica directa con la unidad.
+                                        </p>
+                                    </div>
                                 </div>
-                                {vehicles.length > 5 && <span className="text-[9px] text-neutral-600 font-bold">+{vehicles.length - 5}</span>}
-                            </div>
-                        </div>
 
-                        <div className="relative flex-1 rounded-[32px] overflow-hidden border border-white/10 shadow-3xl bg-[#111] silver-map-container">
-                            {hasCoords ? (
-                                <MapContainer
-                                    center={[lat, lng]}
-                                    zoom={16}
-                                    style={{ width: '100%', height: '100%' }}
-                                    zoomControl={false}
-                                    className="map-main-instance"
-                                >
-                                    <LayersControl position="topright">
-                                        <LayersControl.BaseLayer checked name="Visión Táctica">
-                                            <TileLayer 
-                                                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png" 
-                                                attribution='&copy; LinkGPS Intelligence'
+                                <div className="border-t border-black/5 pt-3 flex-1 overflow-y-auto no-scrollbar space-y-2">
+                                    {loadingVeh ? (
+                                        [1, 2, 3].map(i => (
+                                            <div key={i} className="h-14 rounded-2xl bg-black/[0.02] animate-pulse border border-black/5" />
+                                        ))
+                                    ) : vehicles.length === 0 ? (
+                                        <div className="py-8 text-center bg-black/[0.02] rounded-2xl border border-black/5">
+                                            <Car className="mx-auto text-neutral-300 mb-2" size={36} />
+                                            <h4 className="text-xs font-black text-black">Sin unidades</h4>
+                                            <p className="text-neutral-400 text-[10px] mt-0.5">No hay vehículos vinculados en tu cuenta.</p>
+                                        </div>
+                                    ) : (
+                                        vehicles.map(v => (
+                                            <VehicleChip
+                                                key={v.id}
+                                                veh={v}
+                                                selected={vehSel?.id === v.id}
+                                                loading={loadingLoc && vehSel?.id === v.id}
+                                                onSelect={onSelectVehicle}
                                             />
-                                        </LayersControl.BaseLayer>
-                                        <LayersControl.BaseLayer name="Satélite Real">
-                                            <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-                                        </LayersControl.BaseLayer>
-                                    </LayersControl>
-
-                                    <ViewUpdater lat={lat} lng={lng} />
-
-                                    <Circle
-                                        center={[lat, lng]}
-                                        radius={80}
-                                        pathOptions={{ color: '#F97316', fillColor: '#F97316', fillOpacity: 0.1, weight: 1 }}
-                                    />
-
-                                    <Marker position={[lat, lng]} icon={iconRef.current}>
-                                        <Popup>
-                                            <div className="text-center font-bold text-brand-dark p-1">
-                                                <div className="text-sm border-b border-black/5 pb-1 mb-1">{vehSel?.modelo}</div>
-                                                <div className="text-[10px] text-brand-orange font-black uppercase tracking-widest">{vehSel?.placa}</div>
-                                                <div className="mt-2 pt-2 border-t border-black/5 flex flex-col gap-0.5">
-                                                    <div className="text-[9px] font-mono text-neutral-500">LAT: {lat.toFixed(6)}</div>
-                                                    <div className="text-[9px] font-mono text-neutral-500">LON: {lng.toFixed(6)}</div>
-                                                </div>
-                                            </div>
-                                        </Popup>
-                                    </Marker>
-                                </MapContainer>
-                            ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-                                    <Loader2 size={32} className="animate-spin text-brand-orange/50" />
-                                    <p className="text-neutral-600 font-black text-[10px] uppercase tracking-widest">Sincronizando Telemétrica...</p>
+                                        ))
+                                    )}
                                 </div>
-                            )}
-
-                            {/* Info Overlay (Compact) */}
-                            {hasCoords && (
-                                <div className="absolute bottom-4 left-4 z-[1000] w-64">
-                                    <InfoPanel
-                                        veh={vehSel}
-                                        location={location}
-                                        loading={loadingLoc}
-                                        onRefresh={() => fetchLocation(vehSel.id)}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Live Badge */}
-                            <div className="absolute top-4 right-14 z-[1000]">
-                                <div className="bg-brand-orange text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                    LIVE
-                                </div>
-                            </div>
+                            </motion.div>
                         </div>
-                    </motion.div>
-                )}
+                    )}
+                </AnimatePresence>
             </div>
 
+            {/* Inactive analysis service modal */}
             <AnimatePresence>
                 {errorModal && (
                     <ModalNoService
@@ -429,15 +431,24 @@ export default function MapaVivo() {
             </AnimatePresence>
 
             <style>{`
-                .silver-map-container .leaflet-tile-pane {
-                    filter: grayscale(100%) brightness(0.45) contrast(1.55);
+                .leaflet-popup-content-wrapper {
+                    background: white !important;
+                    border-radius: 16px !important;
+                    padding: 4px !important;
+                    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1) !important;
+                    border: 1px solid rgba(0,0,0,0.05);
                 }
-                .silver-map-container .leaflet-container {
-                    background: #0a0a0a !important;
+                .leaflet-popup-tip {
+                    background: white !important;
+                    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1) !important;
                 }
-                .leaflet-popup-content-wrapper { background: white; border-radius: 16px; padding: 4px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
-                .leaflet-control-layers { background: rgba(0,0,0,0.85) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; border-radius: 12px !important; backdrop-filter: blur(12px); font-family: inherit; }
-                .leaflet-control-layers-list { padding: 8px; font-weight: 900; text-transform: uppercase; font-size: 9px; letter-spacing: 0.1em; }
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
             `}</style>
         </div>
     );
