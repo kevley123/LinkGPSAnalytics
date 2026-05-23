@@ -1,6 +1,6 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef } from 'react';
 import { motion } from 'framer-motion';
-import {
+import { 
   ShieldCheck,
   Send
 } from 'lucide-react';
@@ -11,9 +11,7 @@ import 'leaflet.heat';
 import { useAppContext } from '../context/AppContext';
 import assistantIcon from '../assets/asistente.png';
 import agenteAlertaIcon from '../assets/agente_alerta.png';
-//import { env } from '../config/env';
 
-// const API_BASE = env.API_BASE_URL;
 const API_BASE = "https://11tkrk1f2zwo.share.zrok.io";
 
 // --- Heatmap Layer Component ---
@@ -22,7 +20,7 @@ const HeatmapLayer = memo(({ points }: { points: any[] }) => {
 
   useEffect(() => {
     if (!points || points.length === 0) return;
-
+    
     // @ts-ignore
     const heat = L.heatLayer(
       points.map(p => [p.lat, p.lon, (p.intensity || 0.5) * 6]),
@@ -64,7 +62,7 @@ const DigitalClock = ({ light }: { light?: boolean }) => {
       </div>
       <div className={`w-px h-4 ${light ? 'bg-white/20' : 'bg-black/10'}`} />
       <div className={`text-[8px] font-black uppercase tracking-widest leading-none ${light ? 'text-white/40' : 'text-black/40'}`}>
-        LInk<br />GPS
+        Link<br />GPS
       </div>
     </div>
   );
@@ -77,7 +75,7 @@ interface Message {
 }
 
 // --- Typewriter Text Component ---
-const TypewriterText = ({ text, onComplete }: { text: string; onComplete: () => void }) => {
+const TypewriterText = ({ text, onComplete, onTick }: { text: string; onComplete: () => void; onTick: () => void }) => {
   const [displayed, setDisplayed] = useState('');
 
   useEffect(() => {
@@ -87,22 +85,37 @@ const TypewriterText = ({ text, onComplete }: { text: string; onComplete: () => 
       if (idx < text.length) {
         setDisplayed((prev) => prev + text.charAt(idx));
         idx++;
+        onTick();
       } else {
         clearInterval(timer);
         onComplete();
       }
-    }, 12);
+    }, 30);
     return () => clearInterval(timer);
   }, [text]);
 
   return (
     <span>
-      {displayed}
+      {formatMessageText(displayed)}
       {displayed.length < text.length && (
         <span className="inline-block w-1.5 h-3.5 ml-1 bg-brand-orange animate-pulse align-middle" />
       )}
     </span>
   );
+};
+
+// --- Custom formatter to support bold and formatting ---
+const formatMessageText = (text: string) => {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index} className="font-extrabold text-black underline decoration-brand-orange/30 decoration-2">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('**')) {
+      return <strong key={index} className="font-extrabold text-black underline decoration-brand-orange/30 decoration-2">{part.slice(2)}</strong>;
+    }
+    return part;
+  });
 };
 
 export default function Dashboard() {
@@ -119,6 +132,20 @@ export default function Dashboard() {
   const [isTypingResponse, setIsTypingResponse] = useState(true);
   const [isWaitingForAPI, setIsWaitingForAPI] = useState(false);
   const [inputValue, setInputValue] = useState('');
+
+  // Refs for auto scrolling message box
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  };
+
+  // Auto-scroll when messages update or waiting state changes
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isWaitingForAPI]);
 
   // Initialize compact greeting message on load
   useEffect(() => {
@@ -176,14 +203,24 @@ export default function Dashboard() {
         const riskScoreVal = json.risk_score;
 
         let parts: string[] = [];
-        if (responseMsg) {
+        if (responseMsg && responseMsg.trim()) {
           parts.push(responseMsg);
         }
-        if (recommendationsMsg) {
-          parts.push(`\n**Recomendaciones:**\n${recommendationsMsg}`);
+        if (recommendationsMsg && recommendationsMsg.trim()) {
+          const list = recommendationsMsg.split(',')
+            .map((r: string) => r.trim())
+            .filter((r: string) => r.length > 0);
+          
+          if (list.length > 0) {
+            parts.push(`\n**Recomendaciones:**\n` + list.map((item: string) => `• ${item}`).join('\n'));
+          }
         }
-        if (riskScoreVal !== undefined && riskScoreVal !== null && parseFloat(riskScoreVal) > 0.0) {
-          parts.push(`\n**Nivel de Riesgo:** ${riskScoreVal} / 10`);
+        // Correctly handle risk score: hide if 0.0, null, or empty
+        if (riskScoreVal !== undefined && riskScoreVal !== null && riskScoreVal !== '') {
+          const scoreNum = parseFloat(riskScoreVal);
+          if (!isNaN(scoreNum) && scoreNum > 0.0) {
+            parts.push(`\n**Nivel de Riesgo:** ${scoreNum.toFixed(2)} / 10`);
+          }
         }
         replyText = parts.join('\n');
       }
@@ -191,7 +228,7 @@ export default function Dashboard() {
       console.warn("API Chatbot ask endpoint error:", err);
     }
 
-    // Error handling requirement
+    // Error handling fallback
     if (!replyText) {
       replyText = "En estos momentos no estoy disponible. Por favor, intentalo más tarde.";
     }
@@ -230,7 +267,7 @@ export default function Dashboard() {
     <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.9fr] gap-4 h-[calc(100vh-172px)] w-full text-black overflow-hidden">
       {/* Left Column (Info Panel + Chatbot) - Added padding to let the RGB shadow breathe */}
       <div className="flex flex-col gap-4 h-full overflow-hidden px-3.5 py-2">
-
+        
         {/* Left Top Card: White & Compact with larger text */}
         <motion.div
           initial={{ opacity: 0, y: -15 }}
@@ -239,10 +276,10 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-black text-black leading-none">
+              <h2 className="text-lg font-black text-black leading-none tracking-tight">
                 Bienvenido, {user?.name?.split(' ')[0] ?? 'Operador'}
               </h2>
-              <p className="text-[9px] font-black text-brand-orange uppercase tracking-widest mt-1.5 leading-none">
+              <p className="text-[10px] font-bold text-brand-orange uppercase tracking-widest mt-1.5 leading-none">
                 DASHBOARD DE LINK ANALYTICS
               </p>
             </div>
@@ -250,19 +287,19 @@ export default function Dashboard() {
               <DigitalClock light={false} />
             </div>
           </div>
-
+          
           <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-black/5">
             <div className="bg-[#f8f9fa] p-1.5 rounded-lg border border-black/5 flex flex-col justify-between">
               <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block leading-none">Alertas Inteligentes</span>
-              <span className="text-xs font-black text-brand-orange mt-0.5 leading-none">{stats.alerts}</span>
+              <span className="text-[13px] font-black text-brand-orange mt-0.5 leading-none">{stats.alerts}</span>
             </div>
             <div className="bg-[#f8f9fa] p-1.5 rounded-lg border border-black/5 flex flex-col justify-between">
               <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block leading-none">Anomalías</span>
-              <span className="text-xs font-black text-black mt-0.5 leading-none">{stats.anomalies}</span>
+              <span className="text-[13px] font-black text-black mt-0.5 leading-none">{stats.anomalies}</span>
             </div>
             <div className="bg-[#f8f9fa] p-1.5 rounded-lg border border-black/5 flex flex-col justify-between">
               <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block leading-none">Riesgo</span>
-              <span className="text-xs font-black text-brand-orange mt-0.5 leading-none">{stats.riskScore}</span>
+              <span className="text-[13px] font-black text-brand-orange mt-0.5 leading-none">{stats.riskScore}</span>
             </div>
           </div>
         </motion.div>
@@ -286,8 +323,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Chat Message Stream - Font size changed from 10px to 12px (text-xs) */}
-            <div className="flex-1 overflow-y-auto pr-1 space-y-3 scrollbar-none">
+            {/* Chat Message Stream - Larger text and hidden scrollbars */}
+            <div 
+              ref={chatMessagesRef}
+              className="flex-1 overflow-y-auto pr-1 space-y-3 no-scrollbar"
+            >
               {messages.map((msg, index) => {
                 const isUser = msg.sender === 'user';
                 return (
@@ -299,21 +339,23 @@ export default function Dashboard() {
                     ) : (
                       <img src={assistantIcon} className="w-6 h-6 rounded-full border border-black/5 object-cover mt-0.5 shrink-0" />
                     )}
-
-                    <div className={`p-3 rounded-2xl text-xs leading-relaxed font-semibold whitespace-pre-line max-w-[85%] ${isUser
-                      ? 'bg-black text-white rounded-tr-none'
-                      : 'bg-[#f8f9fa] border border-[#eef0f2] text-black rounded-tl-none'
-                      }`}>
+                    
+                    <div className={`p-3.5 rounded-2xl text-[13px] leading-relaxed font-semibold whitespace-pre-line max-w-[85%] ${
+                      isUser 
+                        ? 'bg-black text-white rounded-tr-none' 
+                        : 'bg-[#f8f9fa] border border-[#eef0f2] text-black rounded-tl-none'
+                    }`}>
                       {msg.isAnimating ? (
-                        <TypewriterText
-                          text={msg.text}
+                        <TypewriterText 
+                          text={msg.text} 
                           onComplete={() => {
                             setMessages(prev => prev.map((m, i) => i === index ? { ...m, isAnimating: false } : m));
                             setIsTypingResponse(false);
                           }}
+                          onTick={scrollToBottom}
                         />
                       ) : (
-                        msg.text
+                        formatMessageText(msg.text)
                       )}
                     </div>
                   </div>
@@ -324,7 +366,7 @@ export default function Dashboard() {
               {isWaitingForAPI && (
                 <div className="flex items-start gap-2.5">
                   <img src={assistantIcon} className="w-6 h-6 rounded-full border border-black/5 object-cover mt-0.5 shrink-0" />
-                  <div className="bg-[#f8f9fa] border border-[#eef0f2] p-3 rounded-2xl rounded-tl-none text-xs text-black/40 font-semibold flex items-center gap-1">
+                  <div className="bg-[#f8f9fa] border border-[#eef0f2] p-3.5 rounded-2xl rounded-tl-none text-[13px] text-black/40 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     <span className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -335,26 +377,26 @@ export default function Dashboard() {
 
             {/* Chat Input form */}
             <form onSubmit={handleSendMessage} className="flex items-center gap-2 border-t border-black/5 pt-2.5 shrink-0">
-              <input
-                type="text"
+              <input 
+                type="text" 
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder={
-                  isTypingResponse
-                    ? "Escribiendo..."
-                    : isWaitingForAPI
-                      ? "Buscando..."
+                  isTypingResponse 
+                    ? "Escribiendo..." 
+                    : isWaitingForAPI 
+                      ? "Buscando..." 
                       : "Consultar zona de riesgo..."
-                }
-                className="flex-1 bg-[#f8f9fa] border border-black/5 rounded-xl px-3.5 py-2.5 text-xs font-bold focus:outline-none focus:border-brand-orange text-black disabled:opacity-50"
+                } 
+                className="flex-1 bg-[#f8f9fa] border border-black/5 rounded-xl px-3.5 py-2.5 text-[13px] font-bold focus:outline-none focus:border-brand-orange text-black disabled:opacity-50"
                 disabled={isTypingResponse || isWaitingForAPI}
               />
-              <button
+              <button 
                 type="submit"
-                className="p-2.5 bg-black hover:bg-neutral-800 text-white rounded-xl transition-all disabled:opacity-30"
+                className="p-2.5 bg-black hover:bg-neutral-800 text-white rounded-xl transition-all disabled:opacity-30 flex items-center justify-center shrink-0"
                 disabled={!inputValue.trim() || isTypingResponse || isWaitingForAPI}
               >
-                <Send size={12} />
+                <Send size={13} />
               </button>
             </form>
           </div>
@@ -371,7 +413,7 @@ export default function Dashboard() {
       >
         <div className="flex-1 z-0 relative">
           <MapContainer
-            center={[-16.5, -66.0]}
+            center={[-16.5, -66.0]} 
             zoom={7}
             zoomControl={false}
             className="h-full w-full"
@@ -410,7 +452,7 @@ export default function Dashboard() {
                 Agente Alerta [IA]
               </p>
               <p className="font-mono text-[9px] text-neutral-800 leading-relaxed font-bold mt-2">
-                Este mapa térmico representa el índice nacional de anomalías y vulnerabilidades de vehículos en Bolivia en tiempo real.
+                Este mapa térmico representa el índice nacional de anomalías y vulnerabilidades de vehículos en Bolivia en tiempo real. 
                 <br /><br />
                 Las zonas rojas indican un alto índice de incidentes de sustracción y eventos de SOS monitoreadas por LinkGPS.
               </p>
@@ -421,10 +463,10 @@ export default function Dashboard() {
               src={agenteAlertaIcon}
               alt="Agente Alerta"
               animate={{ y: [0, -8, 0] }}
-              transition={{
-                duration: 3.5,
-                repeat: Infinity,
-                ease: "easeInOut"
+              transition={{ 
+                duration: 3.5, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
               }}
               className="w-28 h-28 rounded-full border-4 border-brand-orange/60 object-cover shadow-2xl pointer-events-auto bg-white shrink-0"
             />
@@ -442,6 +484,13 @@ export default function Dashboard() {
         }
         .rgb-glow-card {
           animation: rgbGlow 6s infinite ease-in-out;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
