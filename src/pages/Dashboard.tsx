@@ -199,22 +199,29 @@ export default function Dashboard() {
       if (res.ok) {
         const json = await res.json();
         const responseMsg = json.response || '';
-        const recommendationsMsg = json.recommendations || '';
+        const recommendationsMsg = json.recommendations;
         const riskScoreVal = json.risk_score;
 
         let parts: string[] = [];
-        if (responseMsg && responseMsg.trim()) {
+        if (responseMsg && typeof responseMsg === 'string' && responseMsg.trim()) {
           parts.push(responseMsg);
         }
-        if (recommendationsMsg && recommendationsMsg.trim()) {
-          const list = recommendationsMsg.split(',')
-            .map((r: string) => r.trim())
-            .filter((r: string) => r.length > 0);
+
+        if (recommendationsMsg) {
+          let list: string[] = [];
+          if (Array.isArray(recommendationsMsg)) {
+            list = recommendationsMsg.map((r: any) => String(r).trim()).filter((r: string) => r.length > 0);
+          } else if (typeof recommendationsMsg === 'string' && recommendationsMsg.trim()) {
+            list = recommendationsMsg.split(',')
+              .map((r: string) => r.trim())
+              .filter((r: string) => r.length > 0);
+          }
           
           if (list.length > 0) {
             parts.push(`\n**Recomendaciones:**\n` + list.map((item: string) => `• ${item}`).join('\n'));
           }
         }
+
         // Correctly handle risk score: hide if 0.0, null, or empty
         if (riskScoreVal !== undefined && riskScoreVal !== null && riskScoreVal !== '') {
           const scoreNum = parseFloat(riskScoreVal);
