@@ -410,13 +410,13 @@ export default function RutasFrecuentes() {
                - Right Column (flex-1): Zoomed-out map */
             <>
               {/* Left Column Stack */}
-              <div className="w-[340px] h-full flex flex-col gap-4 shrink-0 min-h-0">
+              <div className="w-[440px] h-full flex flex-col gap-4 shrink-0 min-h-0">
                 
-                {/* 1. Izquierda Superior: Chatbot bubble beautifully adjusted */}
-                <div className="bg-white border border-black/5 rounded-[24px] p-4 shadow-sm flex flex-col gap-3 items-center justify-between min-h-0 flex-1">
-                  <div className="flex items-center gap-3 w-full border-b border-black/5 pb-2">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-brand-orange/20 bg-white flex items-center justify-center shadow-md relative shrink-0">
-                      <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-9 h-9 object-contain" />
+                {/* 1. Izquierda Superior: Chatbot bubble beautifully adjusted (reduced height) */}
+                <div className="bg-white border border-black/5 rounded-[24px] p-4 shadow-sm flex flex-col gap-2.5 items-center justify-between min-h-0 h-[190px] shrink-0">
+                  <div className="flex items-center gap-3 w-full border-b border-black/5 pb-2 shrink-0">
+                    <div className="w-11 h-11 rounded-full overflow-hidden border border-brand-orange/20 bg-white flex items-center justify-center shadow-md relative shrink-0">
+                      <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-8 h-8 object-contain" />
                       <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full animate-pulse"></span>
                     </div>
                     <div className="text-left">
@@ -426,20 +426,20 @@ export default function RutasFrecuentes() {
                   </div>
 
                   {/* Speech Bubble Container */}
-                  <div className="w-full flex-1 flex flex-col justify-center py-1">
-                    <div className="relative bg-brand-orange/5 border border-brand-orange/10 p-4 rounded-2xl shadow-sm flex flex-col gap-2">
+                  <div className="w-full flex-1 flex flex-col justify-center min-h-0">
+                    <div className="relative bg-brand-orange/5 border border-brand-orange/10 p-3.5 rounded-2xl shadow-sm flex flex-col gap-1.5 overflow-y-auto no-scrollbar">
                       {/* Speech bubble pointer */}
                       <div className="absolute top-[-5px] left-[24px] w-2.5 h-2.5 bg-[#fef6f0] border-t border-l border-brand-orange/10 rotate-45"></div>
 
-                      <p className="text-[11px] text-neutral-700 font-bold leading-normal italic text-left">
+                      <p className="text-sm font-bold text-neutral-800 leading-snug italic text-left">
                         <TypewriterText text="He analizado la telemetría de los últimos 20 días de esta unidad, filtrando puntos donde estuvo detenida o con movimiento mínimo. Las Zonas Habituales (main) corresponden a ubicaciones recurrentes (ej. base/empresa), mientras que los clústeres secundarios señalan paradas frecuentes." />
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* 2. Izquierda Inferior: 3D Scene + overlaid parameters (only the 3 key parameters shown over the 3D element) */}
-                <div className="h-[260px] rounded-[24px] overflow-hidden relative border border-black/5 bg-[#f1f3f5] shrink-0">
+                {/* 2. Izquierda Inferior: 3D Scene + overlaid parameters (flex-1 to be wider and taller) */}
+                <div className="flex-1 rounded-[24px] overflow-hidden relative border border-black/5 bg-[#f1f3f5] min-h-[280px]">
                   {/* The interactive 3D Spline Scene */}
                   <div className="absolute inset-0 z-0">
                     <Spline scene={townaceModel} />
@@ -454,18 +454,18 @@ export default function RutasFrecuentes() {
                   </div>
 
                   {/* Overlaid parameters container directly on top/bottom of the 3D element */}
-                  <div className="absolute bottom-3 inset-x-3 z-10 flex flex-col gap-1.5 pointer-events-auto bg-black/85 backdrop-blur-xl p-3 rounded-2xl border border-white/10 shadow-lg">
-                    <div className="flex justify-between items-center text-[8.5px] font-bold text-white">
+                  <div className="absolute bottom-3 inset-x-3 z-10 flex flex-col gap-2 pointer-events-auto bg-black/85 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-white">
                       <span className="text-white/60 uppercase">Análisis</span>
                       <span className="font-mono text-brand-orange font-black">Últimos 20 Días</span>
                     </div>
                     <div className="w-full h-px bg-white/10" />
-                    <div className="flex justify-between items-center text-[8.5px] font-bold text-white">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-white">
                       <span className="text-white/60 uppercase">Zonas Habituales (main)</span>
                       <span className="font-mono text-brand-orange font-black">{mainClusters} zonas</span>
                     </div>
                     <div className="w-full h-px bg-white/10" />
-                    <div className="flex justify-between items-center text-[8.5px] font-bold text-white">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-white">
                       <span className="text-white/60 uppercase">Paradas Frecuentes</span>
                       <span className="font-mono text-emerald-400 font-black">{totalClusters - mainClusters} paradas</span>
                     </div>
@@ -608,11 +608,11 @@ export default function RutasFrecuentes() {
                   </div>
                   
                   {/* Styled speech bubble with Typewriter Text animation */}
-                  <div className="relative bg-white border border-black/5 p-4 rounded-2xl shadow-sm">
+                  <div className="relative bg-white border border-black/5 p-5 rounded-2xl shadow-sm">
                     {/* speech bubble triangle */}
-                    <div className="absolute top-[-6px] left-[50%] translate-x-[-50%] w-3 h-3 bg-white border-t border-l border-black/5 rotate-45"></div>
-                    <span className="text-[9px] font-black text-brand-orange uppercase tracking-wider block leading-none mb-2">Agente Alerta [IA]</span>
-                    <p className="text-[12px] text-neutral-700 font-bold leading-normal italic text-center">
+                    <div className="absolute top-[-6px] left-[50%] translate-x-[-50%] w-3.5 h-3.5 bg-white border-t border-l border-black/5 rotate-45"></div>
+                    <span className="text-[10px] font-black text-brand-orange uppercase tracking-wider block leading-none mb-2.5">Agente Alerta [IA]</span>
+                    <p className="text-sm font-bold text-neutral-800 leading-normal italic text-center">
                       <TypewriterText text="Hola. Este módulo de analítica geoespacial procesa el histórico completo de tus recorridos para identificar de forma inteligente tus rutas frecuentes y bases operativas mediante clústeres espaciales." />
                     </p>
                   </div>
