@@ -403,84 +403,78 @@ export default function RutasFrecuentes() {
               <p className="text-xs font-bold text-black/30 uppercase tracking-widest">Calculando clústeres espaciales...</p>
             </div>
           ) : (
-            /* 3-Part Window Division in Step 2: 
-               1. Left Column (Params + 3D Scene)
-               2. Center Column (Chatbot Bubble)
-               3. Right Column (Leaflet Map zoomed out/larger) */
+            /* Step 2 Screen Division:
+               - Left Column (w-[340px]): 
+                  - Top: Chatbot speech bubble card
+                  - Bottom: 3D Element card with overlaid key parameters on top of the 3D scene (no separate stats card)
+               - Right Column (flex-1): Zoomed-out map */
             <>
-              {/* Part 1: Left Column (Key Parameters + 3D Element) */}
-              <div className="w-[300px] h-full flex flex-col gap-4 overflow-y-auto no-scrollbar shrink-0">
-                {/* Parameters key shown above the 3D scene (ID Vehicle is hidden) */}
-                <div className="space-y-3 bg-white/40 border border-black/5 rounded-[24px] p-4 shadow-inner">
-                  <div className="flex items-center justify-between border-b border-black/5 pb-2">
-                    <span className="text-[9px] font-black text-black/40 uppercase tracking-widest">Parámetros del Vehículo</span>
-                    <span className="text-[10px] font-black text-brand-orange bg-brand-orange/5 px-2 py-0.5 rounded border border-brand-orange/10">
-                      ML clusters
-                    </span>
+              {/* Left Column Stack */}
+              <div className="w-[340px] h-full flex flex-col gap-4 shrink-0 min-h-0">
+                
+                {/* 1. Izquierda Superior: Chatbot bubble beautifully adjusted */}
+                <div className="bg-white border border-black/5 rounded-[24px] p-4 shadow-sm flex flex-col gap-3 items-center justify-between min-h-0 flex-1">
+                  <div className="flex items-center gap-3 w-full border-b border-black/5 pb-2">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-brand-orange/20 bg-white flex items-center justify-center shadow-md relative shrink-0">
+                      <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-9 h-9 object-contain" />
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full animate-pulse"></span>
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-xs font-black text-black tracking-tight leading-none">Agente Alerta [IA]</h3>
+                      <span className="text-[7.5px] font-black text-brand-orange uppercase tracking-wider block mt-1">Soporte Operacional</span>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2">
-                    <div className="bg-white p-3 rounded-2xl border border-black/5 flex flex-col">
-                      <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider">Período de Análisis</span>
-                      <span className="text-xs font-black text-black mt-1">Últimos 20 Días</span>
-                    </div>
-                    <div className="bg-white p-3 rounded-2xl border border-black/5 flex flex-col">
-                      <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider">Zonas Habituales (main)</span>
-                      <span className="text-xs font-black text-brand-orange mt-1">{mainClusters} zonas</span>
-                    </div>
-                    <div className="bg-white p-3 rounded-2xl border border-black/5 flex flex-col">
-                      <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider">Paradas Frecuentes</span>
-                      <span className="text-xs font-black text-emerald-600 mt-1">{totalClusters - mainClusters} ubicaciones</span>
+                  {/* Speech Bubble Container */}
+                  <div className="w-full flex-1 flex flex-col justify-center py-1">
+                    <div className="relative bg-brand-orange/5 border border-brand-orange/10 p-4 rounded-2xl shadow-sm flex flex-col gap-2">
+                      {/* Speech bubble pointer */}
+                      <div className="absolute top-[-5px] left-[24px] w-2.5 h-2.5 bg-[#fef6f0] border-t border-l border-brand-orange/10 rotate-45"></div>
+
+                      <p className="text-[11px] text-neutral-700 font-bold leading-normal italic text-left">
+                        <TypewriterText text="He analizado la telemetría de los últimos 20 días de esta unidad, filtrando puntos donde estuvo detenida o con movimiento mínimo. Las Zonas Habituales (main) corresponden a ubicaciones recurrentes (ej. base/empresa), mientras que los clústeres secundarios señalan paradas frecuentes." />
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* 3D Scene container */}
-                <div className="flex-1 rounded-[24px] overflow-hidden relative border border-black/5 bg-[#f1f3f5] min-h-[180px]">
+                {/* 2. Izquierda Inferior: 3D Scene + overlaid parameters (only the 3 key parameters shown over the 3D element) */}
+                <div className="h-[260px] rounded-[24px] overflow-hidden relative border border-black/5 bg-[#f1f3f5] shrink-0">
+                  {/* The interactive 3D Spline Scene */}
                   <div className="absolute inset-0 z-0">
                     <Spline scene={townaceModel} />
                   </div>
 
+                  {/* Top-left static badge */}
                   <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-2 pointer-events-none">
-                    <div className="bg-black/90 backdrop-blur-xl px-2.5 py-1.5 rounded-lg border border-white/10 flex items-center gap-1.5">
-                      <Compass size={12} className="text-brand-orange" />
-                      <span className="text-[8px] font-black text-white uppercase tracking-wider">Flota de Rutas IA</span>
+                    <div className="bg-black/90 backdrop-blur-xl px-2 py-1 rounded-lg border border-white/10 flex items-center gap-1">
+                      <Compass size={10} className="text-brand-orange" />
+                      <span className="text-[7px] font-black text-white uppercase tracking-wider">Flota de Rutas IA</span>
+                    </div>
+                  </div>
+
+                  {/* Overlaid parameters container directly on top/bottom of the 3D element */}
+                  <div className="absolute bottom-3 inset-x-3 z-10 flex flex-col gap-1.5 pointer-events-auto bg-black/85 backdrop-blur-xl p-3 rounded-2xl border border-white/10 shadow-lg">
+                    <div className="flex justify-between items-center text-[8.5px] font-bold text-white">
+                      <span className="text-white/60 uppercase">Análisis</span>
+                      <span className="font-mono text-brand-orange font-black">Últimos 20 Días</span>
+                    </div>
+                    <div className="w-full h-px bg-white/10" />
+                    <div className="flex justify-between items-center text-[8.5px] font-bold text-white">
+                      <span className="text-white/60 uppercase">Zonas Habituales (main)</span>
+                      <span className="font-mono text-brand-orange font-black">{mainClusters} zonas</span>
+                    </div>
+                    <div className="w-full h-px bg-white/10" />
+                    <div className="flex justify-between items-center text-[8.5px] font-bold text-white">
+                      <span className="text-white/60 uppercase">Paradas Frecuentes</span>
+                      <span className="font-mono text-emerald-400 font-black">{totalClusters - mainClusters} paradas</span>
                     </div>
                   </div>
                 </div>
+
               </div>
 
-              {/* Part 2: Center Column (Chatbot Bubble with typewriter generated response) */}
-              <div className="w-[320px] h-full bg-white/40 border border-black/5 rounded-[24px] p-5 shadow-inner flex flex-col gap-4 items-center justify-between shrink-0">
-                <div className="flex flex-col items-center text-center gap-3 w-full">
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-brand-orange/30 bg-white flex items-center justify-center shadow-lg relative shrink-0">
-                    <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-16 h-16 object-contain" />
-                    <span className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full animate-pulse"></span>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-black tracking-tight leading-none">Agente Alerta [IA]</h3>
-                    <span className="text-[8px] font-black text-brand-orange uppercase tracking-wider block mt-1">Soporte Operacional</span>
-                  </div>
-                </div>
-
-                {/* Chat Bubble Container with Large Typewriter Explanation */}
-                <div className="flex-1 flex flex-col justify-center w-full">
-                  <div className="relative bg-white border border-black/5 p-5 rounded-[24px] shadow-md flex flex-col gap-2">
-                    {/* Small speech bubble triangle tail */}
-                    <div className="absolute top-[-8px] left-[50%] translate-x-[-50%] w-4 h-4 bg-white border-t border-l border-black/5 rotate-45"></div>
-
-                    <p className="text-[12px] text-neutral-700 font-bold leading-normal text-center">
-                      <TypewriterText text="He analizado la telemetría de los últimos 20 días de esta unidad, filtrando puntos donde estuvo detenida o con movimiento mínimo. Las Zonas Habituales (main) corresponden a ubicaciones recurrentes (ej. base/empresa), mientras que los clústeres secundarios señalan paradas frecuentes." />
-                    </p>
-                  </div>
-                </div>
-
-                <div className="w-full text-center">
-                  <span className="text-[8px] font-black text-neutral-400 uppercase tracking-widest block">LinkGPS Analytics Engine</span>
-                </div>
-              </div>
-
-              {/* Part 3: Right Column (Leaflet Map - Larger & Zoomed Out) */}
+              {/* Part 3: Right Column (Leaflet Map) */}
               <div className="flex-1 h-full rounded-[24px] overflow-hidden border-4 border-black/5 relative shadow-2xl bg-white">
                 <MapContainer
                   center={[centerLat, centerLng]}
