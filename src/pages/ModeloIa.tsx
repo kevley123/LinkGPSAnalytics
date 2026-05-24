@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Brain, Sparkles, Cpu, Satellite, ChevronLeft, 
   Loader2, CheckCircle, AlertCircle, X, ArrowRight, 
-  Database, Play, Car
+  Database, Play, Car, Sliders, Clock
 } from 'lucide-react';
 import agenteAlertaIcon from '../assets/agente_alerta.png';
 import { useAppContext } from '../context/AppContext';
@@ -121,9 +121,30 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
 );
 
 // ── Training Progress Modal ──────────────────────────────────────────────────
-const ModalTraining = memo(({ status, taskId, successResult, onClose }: any) => {
+const ModalTraining = memo(({ status, taskId, successResult, onClose, jobType }: any) => {
   const isSuccess = status === 'SUCCESS';
+  const isFailure = status === 'FAILURE';
   
+  const getJobTitle = () => {
+    if (isSuccess) {
+      if (jobType === 'train') return '¡Entrenamiento Completado!';
+      if (jobType === 'infer') return '¡Revaluación Completada!';
+      return '¡Agrupación Completada!';
+    } else if (isFailure) {
+      return '¡Error en Proceso IA!';
+    } else {
+      if (jobType === 'train') return 'Entrenando Modelo IA...';
+      if (jobType === 'infer') return 'Revaluando Modelo IA...';
+      return 'Agrupando Zonas Frecuentes...';
+    }
+  };
+
+  const getJobSubtitle = () => {
+    if (jobType === 'train') return 'Algoritmo de Detección de Anomalías';
+    if (jobType === 'infer') return 'Motor de Inferencia Telemétrica';
+    return 'Algoritmo de Geo-Clustering';
+  };
+
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
       {/* Non-clickable background mask */}
@@ -140,8 +161,18 @@ const ModalTraining = memo(({ status, taskId, successResult, onClose }: any) => 
               <CheckCircle size={36} className="text-white" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-white/80 uppercase tracking-[0.15em] mb-1">Algoritmo Optimizado</p>
-              <h3 className="text-xl font-black">¡Entrenamiento Completado!</h3>
+              <p className="text-[10px] font-black text-white/80 uppercase tracking-[0.15em] mb-1">{getJobSubtitle()}</p>
+              <h3 className="text-xl font-black">{getJobTitle()}</h3>
+            </div>
+          </div>
+        ) : isFailure ? (
+          <div className="bg-gradient-to-br from-red-500 to-red-600 p-8 flex flex-col items-center text-center gap-4 text-white">
+            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border border-white/30 relative">
+              <AlertCircle size={36} className="text-white animate-bounce" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-white/85 uppercase tracking-[0.15em] mb-1">{getJobSubtitle()}</p>
+              <h3 className="text-xl font-black">{getJobTitle()}</h3>
             </div>
           </div>
         ) : (
@@ -150,8 +181,8 @@ const ModalTraining = memo(({ status, taskId, successResult, onClose }: any) => 
               <Loader2 size={32} className="text-white animate-spin" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-white/80 uppercase tracking-[0.15em] mb-1">Machine Learning Pipeline</p>
-              <h3 className="text-xl font-black">Entrenando Modelo IA...</h3>
+              <p className="text-[10px] font-black text-white/80 uppercase tracking-[0.15em] mb-1">{getJobSubtitle()}</p>
+              <h3 className="text-xl font-black">{getJobTitle()}</h3>
             </div>
           </div>
         )}
@@ -171,27 +202,39 @@ const ModalTraining = memo(({ status, taskId, successResult, onClose }: any) => 
               <span className={`px-2.5 py-1 rounded-full text-[8.5px] font-black uppercase tracking-wider ${
                 isSuccess 
                   ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
-                  : 'bg-amber-100 text-amber-700 border border-amber-200 animate-pulse'
+                  : isFailure 
+                    ? 'bg-red-100 text-red-700 border border-red-200'
+                    : 'bg-amber-100 text-amber-700 border border-amber-200 animate-pulse'
               }`}>
-                {isSuccess ? 'Completado' : 'Procesando'}
+                {isSuccess ? 'Completado' : isFailure ? 'Error' : 'Procesando'}
               </span>
             </div>
 
-            {isSuccess && successResult && (
+            {(isSuccess || isFailure) && successResult && (
               <div className="bg-[#f8f9fa] border border-black/5 p-3 rounded-xl space-y-2">
-                <div>
-                  <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider block">Ruta del Archivo (.pkl)</span>
-                  <span className="text-[9.5px] font-mono text-neutral-600 break-all select-all block mt-0.5">{successResult.model_path}</span>
-                </div>
-                <div>
-                  <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider block">Dispositivo Asociado</span>
-                  <span className="text-[10px] font-bold text-neutral-800 block">ID #{successResult.device_id}</span>
-                </div>
+                {successResult.model_path && (
+                  <div>
+                    <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider block">Ruta del Archivo (.pkl)</span>
+                    <span className="text-[9.5px] font-mono text-neutral-600 break-all select-all block mt-0.5">{successResult.model_path}</span>
+                  </div>
+                )}
+                {successResult.device_id && (
+                  <div>
+                    <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider block">Dispositivo Asociado</span>
+                    <span className="text-[10px] font-bold text-neutral-800 block">ID #{successResult.device_id}</span>
+                  </div>
+                )}
+                {successResult.message && (
+                  <div>
+                    <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider block">Resultado / Error</span>
+                    <span className="text-[10px] font-bold text-neutral-800 block mt-0.5">{successResult.message}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {isSuccess ? (
+          {(isSuccess || isFailure) ? (
             <button
               onClick={onClose}
               className="w-full py-3 rounded-xl bg-black hover:bg-neutral-800 text-white font-black text-xs transition-all shadow-md mt-2"
@@ -227,6 +270,11 @@ export default function ModeloIA() {
 
   const [toast, setToast] = useState<Toast | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
+
+  // Sliders
+  const [days, setDays] = useState<number>(30);
+  const [hours, setHours] = useState<number>(40);
+  const [jobType, setJobType] = useState<'train' | 'infer' | 'cluster'>('train');
 
   // Training Task States
   const [trainingActive, setTrainingActive] = useState(false);
@@ -302,24 +350,25 @@ export default function ModeloIA() {
     fetchVehicleDetails(veh.id);
   }, [fetchVehicleDetails]);
 
-  // Handle Training submission (POST)
-  const handleTrainModel = async (days: number) => {
+  // Action 1: Handle Training (POST)
+  const handleTrainModel = async (daysVal: number) => {
     if (!authToken || !vehSel) return;
     
+    setJobType('train');
     setTrainingStatus('queued');
     setTrainingTaskId(null);
     setTrainingResult(null);
     setTrainingActive(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/analytics/ml/vehicles/${vehSel.id}/train?days=${days}`, {
+      const res = await fetch(`${API_BASE}/api/analytics/ml/vehicles/${vehSel.id}/train?days=${daysVal}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ days })
+        body: JSON.stringify({ days: daysVal })
       });
 
       if (!res.ok) throw new Error(`Error: ${res.status}`);
@@ -337,6 +386,86 @@ export default function ModeloIA() {
       setToast({
         id: 'train-err',
         message: 'No se pudo iniciar el entrenamiento del modelo.'
+      });
+    }
+  };
+
+  // Action 2: Handle Re-evaluate Inference (POST)
+  const handleReevaluateModel = async (hoursVal: number) => {
+    if (!authToken || !vehSel) return;
+    
+    setJobType('infer');
+    setTrainingStatus('queued');
+    setTrainingTaskId(null);
+    setTrainingResult(null);
+    setTrainingActive(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/analytics/ml/vehicles/${vehSel.id}/infer?hours=${hoursVal}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ hours: hoursVal })
+      });
+
+      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      const dataTask = await res.json();
+      
+      if (dataTask.task_id) {
+        setTrainingTaskId(dataTask.task_id);
+        setTrainingStatus(dataTask.status || 'queued');
+      } else {
+        throw new Error("No se obtuvo el ID de la tarea de inferencia.");
+      }
+    } catch (err) {
+      console.error("Inference trigger error:", err);
+      setTrainingActive(false);
+      setToast({
+        id: 'infer-err',
+        message: 'No se pudo iniciar la inferencia del modelo.'
+      });
+    }
+  };
+
+  // Action 3: Handle Clustering (POST)
+  const handleClusterModel = async (daysVal: number) => {
+    if (!authToken || !vehSel) return;
+    
+    setJobType('cluster');
+    setTrainingStatus('processing');
+    setTrainingTaskId(null);
+    setTrainingResult(null);
+    setTrainingActive(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/analytics/ml/vehicles/${vehSel.id}/cluster/run?days=${daysVal}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ days: daysVal })
+      });
+
+      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      const dataTask = await res.json();
+      
+      if (dataTask.task_id) {
+        setTrainingTaskId(dataTask.task_id);
+        setTrainingStatus(dataTask.status || 'processing');
+      } else {
+        throw new Error("No se obtuvo el ID de la tarea de clustering.");
+      }
+    } catch (err) {
+      console.error("Clustering trigger error:", err);
+      setTrainingActive(false);
+      setToast({
+        id: 'cluster-err',
+        message: 'No se pudo iniciar la agrupación de zonas frecuentes.'
       });
     }
   };
@@ -360,17 +489,20 @@ export default function ModeloIA() {
         setTrainingStatus(dataStatus.status);
 
         if (dataStatus.status === 'SUCCESS') {
-          setTrainingResult(dataStatus.result);
+          setTrainingResult(dataStatus.result || { message: dataStatus.message || 'La tarea finalizó con éxito.' });
           setToast({
             id: 'train-ok',
-            message: '¡Modelo de Inteligencia Artificial entrenado correctamente!'
+            message: jobType === 'train' 
+              ? '¡Modelo de IA entrenado correctamente!' 
+              : jobType === 'infer' 
+                ? '¡Revaluación de anomalías completada!' 
+                : '¡Agrupación de zonas frecuentes finalizada!'
           });
-          // Note: we keep trainingActive true until they click "Cerrar" to read the output
         } else if (dataStatus.status === 'FAILURE') {
-          setTrainingActive(false);
+          setTrainingResult({ message: dataStatus.result?.message || dataStatus.message || 'La tarea falló en el servidor.' });
           setToast({
             id: 'train-fail',
-            message: 'El entrenamiento falló en el servidor.'
+            message: 'La tarea de IA falló en el servidor.'
           });
         } else {
           // Re-trigger loop
@@ -386,7 +518,7 @@ export default function ModeloIA() {
     timer = setTimeout(checkStatus, 3000);
 
     return () => clearTimeout(timer);
-  }, [trainingActive, trainingTaskId, authToken]);
+  }, [trainingActive, trainingTaskId, authToken, jobType]);
 
   // Clean-up and refresh after training finished
   const handleCloseTrainingModal = () => {
@@ -608,7 +740,7 @@ export default function ModeloIA() {
               </div>
 
               {/* Card 2: Chatbot explanation (Middle) */}
-              <div className="flex-1 h-full bg-white p-5 rounded-[24px] border border-black/5 shadow-sm flex flex-col justify-between overflow-y-auto no-scrollbar min-w-[280px]">
+              <div className="w-[285px] h-full bg-white p-5 rounded-[24px] border border-black/5 shadow-sm flex flex-col justify-between overflow-y-auto no-scrollbar shrink-0">
                 <div className="flex flex-col gap-3.5 items-center justify-between min-h-0 h-full">
                   <div className="flex items-center gap-3 w-full border-b border-black/5 pb-3 shrink-0">
                     <div className="w-12 h-12 rounded-full overflow-hidden border border-brand-orange/20 bg-white flex items-center justify-center shadow-md relative shrink-0">
@@ -646,71 +778,124 @@ export default function ModeloIA() {
                 </div>
               </div>
 
-              {/* Card 3: Training actions/buttons (Right) */}
-              <div className="w-[360px] h-full bg-white p-5 rounded-[24px] border border-black/5 shadow-sm flex flex-col justify-between overflow-y-auto no-scrollbar shrink-0">
+              {/* Card 3: Training actions/buttons (Right - Wider layout) */}
+              <div className="flex-1 min-w-[380px] h-full bg-white p-5 rounded-[24px] border border-black/5 shadow-sm flex flex-col justify-between overflow-y-auto no-scrollbar">
                 <div className="space-y-4">
                   <span className="text-[10px] font-black text-black/40 uppercase tracking-widest block leading-none border-b border-black/5 pb-2">
                     Acciones de Modelado
                   </span>
 
-                  <div className="bg-brand-orange/5 p-4 rounded-2xl border border-brand-orange/10 space-y-2">
-                    <h4 className="text-xs font-black text-brand-orange uppercase leading-none">Dataset Histórico</h4>
-                    <p className="text-[10px] font-semibold text-neutral-600 leading-relaxed">
-                      Selecciona el período de recolección de telemetría GPS para recalibrar el Isolation Forest. Períodos mayores capturan más hábitos semanales.
-                    </p>
+                  {/* Parameters Section with Range Sliders */}
+                  <div className="bg-[#f8f9fa] border border-black/5 p-4 rounded-2xl space-y-4 shadow-sm">
+                    <div className="flex items-center gap-2 pb-1 border-b border-black/5">
+                      <Sliders size={13} className="text-brand-orange" />
+                      <span className="text-[9.5px] font-black text-black/50 uppercase tracking-wider">
+                        Configurar Parámetros del Trabajo
+                      </span>
+                    </div>
+
+                    {/* Slider 1: Days */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9.5px] font-bold text-neutral-600 uppercase flex items-center gap-1">
+                          <Sliders size={12} className="text-brand-orange" /> Período de Análisis (Días)
+                        </span>
+                        <span className="bg-brand-orange/10 text-brand-orange px-2 py-0.5 rounded text-[10px] font-black">
+                          {days} Días
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={1}
+                        max={180}
+                        value={days}
+                        onChange={(e) => setDays(Number(e.target.value))}
+                        className="w-full h-1 bg-black/5 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                      />
+                      <div className="flex justify-between text-[8px] font-bold text-neutral-400">
+                        <span>1 día</span>
+                        <span>90 días</span>
+                        <span>180 días</span>
+                      </div>
+                    </div>
+
+                    {/* Slider 2: Hours */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9.5px] font-bold text-neutral-600 uppercase flex items-center gap-1">
+                          <Clock size={12} className="text-brand-orange" /> Horizonte de Inferencia (Horas)
+                        </span>
+                        <span className="bg-brand-orange/10 text-brand-orange px-2 py-0.5 rounded text-[10px] font-black">
+                          {hours} Horas
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={1}
+                        max={210}
+                        value={hours}
+                        onChange={(e) => setHours(Number(e.target.value))}
+                        className="w-full h-1 bg-black/5 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                      />
+                      <div className="flex justify-between text-[8px] font-bold text-neutral-400">
+                        <span>1 hr</span>
+                        <span>105 hrs</span>
+                        <span>210 hrs</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Period buttons */}
-                  <div className="space-y-3 pt-2">
-                    {/* Button 1: 30 days */}
+                  {/* Operation Buttons */}
+                  <div className="space-y-3 pt-1">
+                    {/* Button 1: Train */}
                     <button
-                      onClick={() => handleTrainModel(30)}
-                      className="w-full bg-black hover:bg-neutral-800 text-white p-4.5 rounded-2xl font-black text-xs transition-all shadow-md flex items-center justify-between group"
+                      onClick={() => handleTrainModel(days)}
+                      className="w-full bg-black hover:bg-neutral-800 text-white p-4 rounded-2xl font-black text-xs transition-all shadow-md flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-brand-orange group-hover:scale-105 transition-transform">
-                          <Play size={14} />
+                        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-brand-orange group-hover:scale-105 transition-transform shrink-0">
+                          <Play size={13} />
                         </div>
                         <div className="text-left">
-                          <p className="text-[8px] font-black text-white/50 uppercase tracking-wider leading-none">Optimización Básica</p>
-                          <p className="text-[11px] font-black mt-1 uppercase">Entrenar (30 Días)</p>
+                          <p className="text-[8px] font-black text-white/50 uppercase tracking-wider leading-none">Entrenar Modelo</p>
+                          <p className="text-[10.5px] font-black mt-1 uppercase">Entrenar con {days} Días</p>
                         </div>
                       </div>
-                      <ArrowRight size={14} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight size={13} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                     </button>
 
-                    {/* Button 2: 60 days */}
+                    {/* Button 2: Infer */}
                     <button
-                      onClick={() => handleTrainModel(60)}
-                      className="w-full bg-gradient-to-r from-brand-orange to-amber-600 text-white p-4.5 rounded-2xl font-black text-xs transition-all shadow-md flex items-center justify-between group border border-white/10"
+                      onClick={() => handleReevaluateModel(hours)}
+                      className="w-full bg-gradient-to-r from-brand-orange to-amber-600 text-white p-4 rounded-2xl font-black text-xs transition-all shadow-md flex items-center justify-between group border border-white/10"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:scale-105 transition-transform">
-                          <Cpu size={14} />
+                        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:scale-105 transition-transform shrink-0">
+                          <Cpu size={13} />
                         </div>
                         <div className="text-left">
-                          <p className="text-[8px] font-black text-white/70 uppercase tracking-wider leading-none">Entrenamiento Medio</p>
-                          <p className="text-[11px] font-black mt-1 uppercase">Entrenar (60 Días)</p>
+                          <p className="text-[8px] font-black text-white/70 uppercase tracking-wider leading-none">Reevaluar Inferencia</p>
+                          <p className="text-[10.5px] font-black mt-1 uppercase">Reevaluar {hours} Horas</p>
                         </div>
                       </div>
-                      <ArrowRight size={14} className="text-white/75 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight size={13} className="text-white/75 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                     </button>
 
-                    {/* Button 3: 90 days */}
+                    {/* Button 3: Cluster */}
                     <button
-                      onClick={() => handleTrainModel(90)}
-                      className="w-full bg-gradient-to-r from-brand-orange/90 to-red-600 text-white p-4.5 rounded-2xl font-black text-xs transition-all shadow-md flex items-center justify-between group border border-white/10"
+                      onClick={() => handleClusterModel(days)}
+                      className="w-full bg-gradient-to-r from-neutral-800 to-neutral-900 text-white p-4 rounded-2xl font-black text-xs transition-all shadow-md flex items-center justify-between group border border-white/5"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-red-200 group-hover:scale-105 transition-transform">
-                          <Sparkles size={14} />
+                        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform shrink-0">
+                          <Sparkles size={13} />
                         </div>
                         <div className="text-left">
-                          <p className="text-[8px] font-black text-white/70 uppercase tracking-wider leading-none">Entrenamiento Extendido</p>
-                          <p className="text-[11px] font-black mt-1 uppercase">Entrenar (90 Días)</p>
+                          <p className="text-[8px] font-black text-white/50 uppercase tracking-wider leading-none">Agrupar Zonas Frecuentes</p>
+                          <p className="text-[10.5px] font-black mt-1 uppercase">Clustering con {days} Días</p>
                         </div>
                       </div>
-                      <ArrowRight size={14} className="text-white/75 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight size={13} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                     </button>
                   </div>
                 </div>
@@ -840,6 +1025,7 @@ export default function ModeloIA() {
             taskId={trainingTaskId}
             successResult={trainingResult}
             onClose={handleCloseTrainingModal}
+            jobType={jobType}
           />
         )}
       </AnimatePresence>
