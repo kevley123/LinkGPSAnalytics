@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Car, AlertCircle, 
-  Loader2, CheckCircle, 
+import {
+  Car, AlertCircle,
+  Loader2, CheckCircle,
   ChevronLeft, Satellite, X, ArrowRight,
   Thermometer, Info, Settings, RefreshCw
 } from 'lucide-react';
@@ -85,14 +85,14 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
 const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
   createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         className="relative w-full max-w-sm bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-[0_32px_80px_rgba(0,0,0,0.15)]"
@@ -102,12 +102,12 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
             <X size={18} />
           </button>
           <div className="w-16 h-16 rounded-full bg-white/15 flex items-center justify-center border border-white/20 relative">
-             <motion.div 
-                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full bg-white/20"
-             />
-             <AlertCircle size={32} className="text-white relative z-10" />
+            <motion.div
+              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute inset-0 rounded-full bg-white/20"
+            />
+            <AlertCircle size={32} className="text-white relative z-10" />
           </div>
           <div>
             <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.15em] mb-1">Acceso denegado</p>
@@ -120,13 +120,13 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
             {message}
           </p>
           <div className="flex flex-col gap-2">
-            <button 
+            <button
               onClick={onSolicitar}
               className="w-full py-3 rounded-xl bg-black hover:bg-neutral-800 text-white font-black text-xs transition-all shadow-md flex items-center justify-center gap-2"
             >
               <Satellite size={14} /> Revisar servicio
             </button>
-            <button 
+            <button
               onClick={onClose}
               className="w-full py-2.5 text-neutral-400 hover:text-black font-bold text-xs transition-colors"
             >
@@ -142,22 +142,22 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
 
 export default function MapaAnomalia() {
   const { authToken } = useAppContext();
-  
+
   const [step, setStep] = useState(1);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [vehSel, setVehSel] = useState<any>(null);
-  
+
   // ML API response state
   const [data, setData] = useState<any>(null);
-  
+
   // Custom query parameters
   const [hours, setHours] = useState<number>(4000);
   const [sampling, setSampling] = useState<number>(5);
-  
+
   // Rendering controls
   const [showNormal, setShowNormal] = useState(true);
   const [showAnomaly, setShowAnomaly] = useState(true);
-  
+
   // Interactive heatmap parameters
   const [radius, setRadius] = useState(55);
   const [blur, setBlur] = useState(45);
@@ -165,7 +165,7 @@ export default function MapaAnomalia() {
   const [loadingVeh, setLoadingVeh] = useState(true);
   const [loadingML, setLoadingML] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [toast, setToast] = useState<Toast | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
 
@@ -196,8 +196,8 @@ export default function MapaAnomalia() {
     setLoadingML(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/analytics/ml/vehicles/${vehId}/heatmap?hours=${queryHours}&sampling=${querySampling}`, {
-        headers: { 
+      const res = await fetch(`${API_BASE}/api/analytics/ml/vehicles/${vehId}/heatmap?hours=${queryHours}&sampling=${querySampling}`, {
+        headers: {
           'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
         }
@@ -232,14 +232,14 @@ export default function MapaAnomalia() {
   const handleUpdateQuery = (e: React.FormEvent) => {
     e.preventDefault();
     if (!vehSel) return;
-    
+
     // Clamp values as requested
     const validatedHours = Math.min(Math.max(hours, 1), 2160); // Max 90 days = 2160 hours
     const validatedSampling = Math.min(Math.max(sampling, 1), 6); // Max sampling 6
-    
+
     setHours(validatedHours);
     setSampling(validatedSampling);
-    
+
     fetchMLData(vehSel.id, validatedHours, validatedSampling);
   };
 
@@ -267,7 +267,7 @@ export default function MapaAnomalia() {
 
   return (
     <div className="text-black h-[calc(100vh-172px)] flex flex-col gap-4 overflow-hidden p-2 relative">
-      
+
       {/* Toast Notification Container */}
       <div className="fixed top-6 right-6 z-[99999] pointer-events-none">
         <AnimatePresence>
@@ -321,7 +321,7 @@ export default function MapaAnomalia() {
 
       {/* Main split interactive workspace */}
       <div className="flex-1 min-h-0 relative rounded-[32px] overflow-hidden border border-black/5 bg-[#f8f9fa] shadow-2xl flex flex-col">
-        
+
         <div className="w-full h-full p-4 relative flex-1 flex flex-row gap-4 min-h-0">
           {error ? (
             <div className="w-full h-full bg-white border border-black/5 rounded-[24px] flex flex-col items-center justify-center gap-4 p-8 shadow-sm">
@@ -332,7 +332,7 @@ export default function MapaAnomalia() {
                 <h3 className="text-sm font-black text-black">Ocurrió un error</h3>
                 <p className="text-neutral-500 text-xs mt-1 leading-relaxed">{error}</p>
               </div>
-              <button 
+              <button
                 onClick={() => fetchMLData(vehSel.id, hours, sampling)}
                 className="px-5 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all shadow-md"
               >
@@ -378,8 +378,8 @@ export default function MapaAnomalia() {
 
                   {/* Normal Heat points */}
                   {showNormal && normalPoints.length > 0 && (
-                    <HeatmapLayer 
-                      points={normalPoints} 
+                    <HeatmapLayer
+                      points={normalPoints}
                       options={{
                         radius: radius,
                         blur: blur,
@@ -391,14 +391,14 @@ export default function MapaAnomalia() {
                           0.75: '#f97316', // Orange
                           1.0: '#3b82f6'   // Blue / regular
                         }
-                      }} 
+                      }}
                     />
                   )}
 
                   {/* Anomaly Heat points */}
                   {showAnomaly && anomalyPoints.length > 0 && (
-                    <HeatmapLayer 
-                      points={anomalyPoints} 
+                    <HeatmapLayer
+                      points={anomalyPoints}
                       options={{
                         radius: radius + 5,
                         blur: blur - 5,
@@ -409,7 +409,7 @@ export default function MapaAnomalia() {
                           0.75: '#f97316', // Orange
                           1.0: '#ef4444'   // Red / anomaly
                         }
-                      }} 
+                      }}
                     />
                   )}
                 </MapContainer>
@@ -445,7 +445,7 @@ export default function MapaAnomalia() {
 
               {/* Right Column: Structured Query Parameter Inputs & Detailed Information */}
               <div className="w-[420px] lg:w-[480px] h-full bg-white p-5 rounded-[24px] border-4 border-black/5 shadow-2xl flex flex-col justify-between overflow-y-auto no-scrollbar shrink-0">
-                
+
                 <div className="space-y-4">
                   {/* Title & Setup section */}
                   <div className="flex items-center gap-3 border-b border-black/5 pb-3">
@@ -455,7 +455,7 @@ export default function MapaAnomalia() {
 
                   {/* Execution query controls form */}
                   <form onSubmit={handleUpdateQuery} className="space-y-3 bg-[#f8f9fa] p-4 rounded-2xl border border-black/5">
-                    
+
                     {/* Hours (historial length) input */}
                     <div>
                       <div className="flex items-center justify-between">
@@ -464,7 +464,7 @@ export default function MapaAnomalia() {
                           Equivale a {equivalentDays} días
                         </span>
                       </div>
-                      <input 
+                      <input
                         type="number"
                         min="1"
                         max="2160"
@@ -480,7 +480,7 @@ export default function MapaAnomalia() {
                     {/* Sampling input */}
                     <div>
                       <label className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Frecuencia de Muestreo (sampling)</label>
-                      <input 
+                      <input
                         type="number"
                         min="1"
                         max="6"
@@ -528,29 +528,29 @@ export default function MapaAnomalia() {
                   {/* Manual visual sliders for map overlay tuning */}
                   <div className="space-y-3 bg-[#f8f9fa]/50 p-3 rounded-2xl border border-black/5">
                     <span className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Visualización de Calor</span>
-                    
+
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-[9px] font-bold text-neutral-500 uppercase">Radio</span>
-                      <input 
-                        type="range" 
-                        min="15" 
-                        max="80" 
-                        value={radius} 
+                      <input
+                        type="range"
+                        min="15"
+                        max="80"
+                        value={radius}
                         onChange={(e) => setRadius(parseInt(e.target.value))}
-                        className="flex-1 accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity" 
+                        className="flex-1 accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity"
                       />
                       <span className="text-[9px] font-bold font-mono text-neutral-500 w-8 text-right">{radius}px</span>
                     </div>
 
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-[9px] font-bold text-neutral-500 uppercase">Difuminado</span>
-                      <input 
-                        type="range" 
-                        min="10" 
-                        max="60" 
-                        value={blur} 
+                      <input
+                        type="range"
+                        min="10"
+                        max="60"
+                        value={blur}
                         onChange={(e) => setBlur(parseInt(e.target.value))}
-                        className="flex-1 accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity" 
+                        className="flex-1 accent-brand-orange h-1 opacity-70 hover:opacity-100 transition-opacity"
                       />
                       <span className="text-[9px] font-bold font-mono text-neutral-500 w-8 text-right">{blur}px</span>
                     </div>
@@ -559,13 +559,13 @@ export default function MapaAnomalia() {
 
                 {/* Machine learning explanation card */}
                 <div className="bg-brand-orange/5 p-3.5 rounded-2xl border border-brand-orange/15 flex items-start gap-2.5 mt-2 shrink-0">
-                   <Info className="text-brand-orange shrink-0 mt-0.5" size={14} />
-                   <div>
-                     <p className="text-[8px] font-black text-brand-orange uppercase tracking-wider leading-none">Interpretación del Modelo</p>
-                     <p className="text-[9.5px] text-neutral-500 font-semibold leading-relaxed mt-1">
-                       El heatmap muestra rutas frecuentes en azul/verde. Los desvíos e incidentes inusuales se agrupan en rojo.
-                     </p>
-                   </div>
+                  <Info className="text-brand-orange shrink-0 mt-0.5" size={14} />
+                  <div>
+                    <p className="text-[8px] font-black text-brand-orange uppercase tracking-wider leading-none">Interpretación del Modelo</p>
+                    <p className="text-[9.5px] text-neutral-500 font-semibold leading-relaxed mt-1">
+                      El heatmap muestra rutas frecuentes en azul/verde. Los desvíos e incidentes inusuales se agrupan en rojo.
+                    </p>
+                  </div>
                 </div>
 
               </div>
@@ -627,9 +627,9 @@ export default function MapaAnomalia() {
       {/* Inactive Service Modal */}
       <AnimatePresence>
         {errorModal && (
-          <ModalNoService 
-            message={errorModal} 
-            onClose={() => setErrorModal(null)} 
+          <ModalNoService
+            message={errorModal}
+            onClose={() => setErrorModal(null)}
             onSolicitar={() => {
               setErrorModal(null);
               window.location.href = `${env.FRONTEND_URL}/user/dashboard/servicios`;

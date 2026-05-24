@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Car, AlertCircle, ShieldCheck, 
-  Loader2, CheckCircle, 
+import {
+  Car, AlertCircle, ShieldCheck,
+  Loader2, CheckCircle,
   ChevronLeft, Satellite, X, ArrowRight,
   Target, Compass
 } from 'lucide-react';
@@ -66,14 +66,14 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
 const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
   createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         className="relative w-full max-w-sm bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-[0_32px_80px_rgba(0,0,0,0.15)]"
@@ -83,12 +83,12 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
             <X size={18} />
           </button>
           <div className="w-16 h-16 rounded-full bg-white/15 flex items-center justify-center border border-white/20 relative">
-             <motion.div 
-                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full bg-white/20"
-             />
-             <AlertCircle size={32} className="text-white relative z-10" />
+            <motion.div
+              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute inset-0 rounded-full bg-white/20"
+            />
+            <AlertCircle size={32} className="text-white relative z-10" />
           </div>
           <div>
             <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.15em] mb-1">Acceso denegado</p>
@@ -101,13 +101,13 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
             {message}
           </p>
           <div className="flex flex-col gap-2">
-            <button 
+            <button
               onClick={onSolicitar}
               className="w-full py-3 rounded-xl bg-black hover:bg-neutral-800 text-white font-black text-xs transition-all shadow-md flex items-center justify-center gap-2"
             >
               <Satellite size={14} /> Revisar servicio
             </button>
-            <button 
+            <button
               onClick={onClose}
               className="w-full py-2.5 text-neutral-400 hover:text-black font-bold text-xs transition-colors"
             >
@@ -123,18 +123,18 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
 
 export default function RutasFrecuentes() {
   const { authToken } = useAppContext();
-  
+
   const [step, setStep] = useState(1);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [vehSel, setVehSel] = useState<any>(null);
-  
+
   // Clusters API response state
   const [data, setData] = useState<any>(null);
-  
+
   const [loadingVeh, setLoadingVeh] = useState(true);
   const [loadingML, setLoadingML] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [toast, setToast] = useState<Toast | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
 
@@ -165,8 +165,8 @@ export default function RutasFrecuentes() {
     setLoadingML(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/ml/vehicles/${vehId}/clusters`, {
-        headers: { 
+      const res = await fetch(`${API_BASE}/api/analytics/ml/vehicles/${vehId}/clusters`, {
+        headers: {
           'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
         }
@@ -220,7 +220,7 @@ export default function RutasFrecuentes() {
 
   return (
     <div className="text-black h-[calc(100vh-172px)] flex flex-col gap-4 overflow-hidden p-2 relative">
-      
+
       {/* Toast Notifications */}
       <div className="fixed top-6 right-6 z-[99999] pointer-events-none">
         <AnimatePresence>
@@ -274,7 +274,7 @@ export default function RutasFrecuentes() {
 
       {/* Main split interactive workspace */}
       <div className="flex-1 min-h-0 relative rounded-[32px] overflow-hidden border border-black/5 bg-[#f8f9fa] shadow-2xl flex flex-col">
-        
+
         <div className="w-full h-full p-4 relative flex-1 flex flex-row gap-4 min-h-0">
           {error ? (
             <div className="w-full h-full bg-white border border-black/5 rounded-[24px] flex flex-col items-center justify-center gap-4 p-8 shadow-sm">
@@ -285,7 +285,7 @@ export default function RutasFrecuentes() {
                 <h3 className="text-sm font-black text-black">Ocurrió un error</h3>
                 <p className="text-neutral-500 text-xs mt-1 leading-relaxed">{error}</p>
               </div>
-              <button 
+              <button
                 onClick={() => fetchClusters(vehSel.id)}
                 className="px-5 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all shadow-md"
               >
@@ -341,27 +341,27 @@ export default function RutasFrecuentes() {
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="text-[8px] font-black text-black/40 uppercase tracking-wider block">ID Vehículo</label>
-                      <input 
-                        type="text" 
-                        readOnly 
+                      <input
+                        type="text"
+                        readOnly
                         value={data?.vehicle_id ?? 'N/A'}
                         className="w-full bg-white border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
                       />
                     </div>
                     <div>
                       <label className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Clústeres Principales</label>
-                      <input 
-                        type="text" 
-                        readOnly 
+                      <input
+                        type="text"
+                        readOnly
                         value={mainClusters}
                         className="w-full bg-white border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
                       />
                     </div>
                     <div>
                       <label className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Clústeres Totales</label>
-                      <input 
-                        type="text" 
-                        readOnly 
+                      <input
+                        type="text"
+                        readOnly
                         value={totalClusters}
                         className="w-full bg-white border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
                       />
@@ -371,11 +371,11 @@ export default function RutasFrecuentes() {
                   {/* List of individual clusters in read-only form cards */}
                   <div className="space-y-2.5">
                     <span className="text-[8px] font-black text-black/40 uppercase tracking-widest block">Detalle de Puntos y Rangos</span>
-                    
+
                     {clustersList.map((c: any, index: number) => {
                       const cLat = c.centroid?.lat ?? c.lat ?? 0;
                       const cLng = c.centroid?.lng ?? c.centroid?.lon ?? c.lng ?? c.lon ?? 0;
-                      
+
                       const updateDate = c.updated_at ? new Date(c.updated_at).toLocaleString('es-BO', {
                         day: '2-digit',
                         month: '2-digit',
@@ -388,9 +388,8 @@ export default function RutasFrecuentes() {
                       return (
                         <div key={index} className="bg-white border border-black/5 p-3 rounded-2xl flex flex-col gap-2 shadow-sm">
                           <div className="flex items-center justify-between w-full">
-                            <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${
-                              c.label === 'main' ? 'bg-brand-orange/10 text-brand-orange' : 'bg-emerald-500/10 text-emerald-600'
-                            }`}>
+                            <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${c.label === 'main' ? 'bg-brand-orange/10 text-brand-orange' : 'bg-emerald-500/10 text-emerald-600'
+                              }`}>
                               Clúster #{c.cluster_id} - {c.label === 'main' ? 'Principal' : 'Secundario'}
                             </span>
                             <span className="text-[9px] font-black text-neutral-400">
@@ -452,7 +451,7 @@ export default function RutasFrecuentes() {
                     const cLng = c.centroid?.lng ?? c.centroid?.lon ?? c.lng ?? c.lon ?? 0;
                     return (
                       <div key={index}>
-                        <Circle 
+                        <Circle
                           center={[cLat, cLng]}
                           radius={c.radius ?? 150}
                           pathOptions={{
@@ -466,9 +465,8 @@ export default function RutasFrecuentes() {
                         <Marker position={[cLat, cLng]}>
                           <Popup>
                             <div className="text-center p-0.5">
-                              <span className={`text-[9px] font-black uppercase tracking-wider block ${
-                                c.label === 'main' ? 'text-brand-orange' : 'text-emerald-600'
-                              }`}>
+                              <span className={`text-[9px] font-black uppercase tracking-wider block ${c.label === 'main' ? 'text-brand-orange' : 'text-emerald-600'
+                                }`}>
                                 Clúster {c.label === 'main' ? 'Principal' : 'Secundario'}
                               </span>
                               <div className="text-[10px] font-bold text-neutral-700 leading-normal mt-1">
@@ -515,7 +513,7 @@ export default function RutasFrecuentes() {
                 {/* Left Side: Agent Alerta with styled bubble */}
                 <div className="md:w-[220px] flex flex-col items-center justify-center text-center gap-3 bg-brand-orange/5 p-4 rounded-2xl border border-brand-orange/10 shrink-0">
                   <div className="w-18 h-18 rounded-full overflow-hidden border border-brand-orange/20 bg-white flex items-center justify-center shadow-md relative">
-                     <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-14 h-14 object-contain" />
+                    <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-14 h-14 object-contain" />
                   </div>
                   <div>
                     <span className="text-[8px] font-black text-brand-orange uppercase tracking-wider block leading-none">Agente de Monitoreo</span>
@@ -567,9 +565,9 @@ export default function RutasFrecuentes() {
       {/* Inactive Service Modal */}
       <AnimatePresence>
         {errorModal && (
-          <ModalNoService 
-            message={errorModal} 
-            onClose={() => setErrorModal(null)} 
+          <ModalNoService
+            message={errorModal}
+            onClose={() => setErrorModal(null)}
             onSolicitar={() => {
               setErrorModal(null);
               window.location.href = `${env.FRONTEND_URL}/user/dashboard/servicios`;
