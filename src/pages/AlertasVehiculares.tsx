@@ -160,7 +160,7 @@ export default function AlertasVehiculares() {
 
       if (!res.ok) throw new Error(`Error de servidor: ${res.status}`);
       const data = await res.json();
-      setAlerts(Array.isArray(data) ? data : (data.results ?? []));
+      setAlerts(Array.isArray(data) ? data : (data.alerts ?? data.results ?? []));
       setStep(2);
     } catch (err: any) {
       console.error("Error fetching vehicle alerts:", err);

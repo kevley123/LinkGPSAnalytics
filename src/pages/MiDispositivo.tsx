@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Car, AlertCircle, ShieldCheck, 
+  Car, AlertCircle, 
   Loader2, CheckCircle, 
   ChevronLeft, Satellite, X, ArrowRight,
   Smartphone, Signal, Battery, Info, Radio,
@@ -31,7 +31,7 @@ const RpmGauge = ({ rpm = 1000 }: { rpm: number }) => {
   const percentage = clampedRpm / maxRpm;
 
   return (
-    <div className="flex flex-col items-center justify-center relative w-24 h-24 shrink-0">
+    <div className="flex flex-col items-center justify-center relative w-28 h-28 shrink-0">
       <svg className="w-full h-full transform -rotate-[135deg]" viewBox="0 0 120 120">
         {/* Background Arc */}
         <circle
@@ -40,7 +40,7 @@ const RpmGauge = ({ rpm = 1000 }: { rpm: number }) => {
           r="45"
           fill="transparent"
           stroke="#f1f3f5"
-          strokeWidth="6"
+          strokeWidth="7"
           strokeDasharray="212 280"
           strokeLinecap="round"
         />
@@ -51,7 +51,7 @@ const RpmGauge = ({ rpm = 1000 }: { rpm: number }) => {
           r="45"
           fill="transparent"
           stroke={clampedRpm > 6000 ? '#EF4444' : '#F97316'}
-          strokeWidth="6"
+          strokeWidth="7"
           strokeDasharray="212 280"
           strokeDashoffset={212 - (212 * percentage)}
           strokeLinecap="round"
@@ -59,9 +59,9 @@ const RpmGauge = ({ rpm = 1000 }: { rpm: number }) => {
         />
       </svg>
       {/* Centered Digital Display */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center mt-2">
-        <span className="text-lg font-black text-black leading-none">{clampedRpm}</span>
-        <span className="text-[7px] font-black text-black/40 uppercase tracking-widest mt-0.5">RPM</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center mt-3">
+        <span className="text-xl font-black text-black leading-none">{clampedRpm}</span>
+        <span className="text-[8px] font-black text-black/40 uppercase tracking-widest mt-0.5">RPM</span>
       </div>
     </div>
   );
@@ -69,10 +69,10 @@ const RpmGauge = ({ rpm = 1000 }: { rpm: number }) => {
 
 // ── Switch/Toggle Switch Component ────────────────────────────────────────────
 const ToggleSwitch = memo(({ label, checked }: { label: string; checked: boolean }) => (
-  <div className="flex items-center justify-between p-2 bg-[#f8f9fa] rounded-xl border border-black/5">
-    <span className="text-[9px] font-black text-neutral-600 uppercase tracking-wider">{label}</span>
-    <div className={`w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 cursor-default flex items-center ${checked ? 'bg-brand-orange' : 'bg-neutral-200'}`}>
-      <div className={`w-3.5 h-3.5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${checked ? 'translate-x-3.5' : 'translate-x-0'}`} />
+  <div className="flex items-center justify-between p-2.5 bg-[#f8f9fa] rounded-xl border border-black/5">
+    <span className="text-[10px] font-black text-neutral-600 uppercase tracking-wider">{label}</span>
+    <div className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 cursor-default flex items-center ${checked ? 'bg-brand-orange' : 'bg-neutral-200'}`}>
+      <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ${checked ? 'translate-x-4' : 'translate-x-0'}`} />
     </div>
   </div>
 ));
@@ -427,43 +427,19 @@ export default function MiDispositivo() {
                2. Middle Column: Datos Vehiculares details (switches + tachometer)
                3. Right Column: Estadísticas details */
             <>
-              {/* Card 1: Left Column - 3D Scene View */}
-              <div className="flex-1 h-full bg-white border border-black/5 rounded-[24px] shadow-sm overflow-hidden relative min-w-[280px]">
-                <div className="absolute inset-0 z-0">
-                  <Spline scene={townaceModel} />
-                </div>
-
-                {/* Overlays on 3D */}
-                <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2 pointer-events-none">
-                  <div className="bg-black/90 backdrop-blur-xl px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-brand-orange/20 flex items-center justify-center text-brand-orange shrink-0">
-                      <Radio size={12} />
-                    </div>
-                    <div>
-                      <p className="text-[7px] font-black text-white/40 uppercase tracking-wider leading-none">Canal de Datos</p>
-                      <p className="text-[9px] font-black text-white leading-none mt-1">Conectado (3D)</p>
-                    </div>
+              {/* Card 1: Left Column Stack (Vehicle Info Top, 3D Spline Bottom) */}
+              <div className="w-[300px] h-full flex flex-col gap-4 shrink-0 min-h-0">
+                
+                {/* 1.1 Ficha del Vehículo Superior */}
+                <div className="bg-white p-4.5 rounded-[24px] border border-black/5 shadow-sm flex flex-col gap-3 shrink-0">
+                  <div className="flex items-center gap-2 border-b border-black/5 pb-2">
+                    <Car className="text-brand-orange" size={15} />
+                    <span className="text-[10px] font-black text-black uppercase tracking-wider">Unidad Vinculada</span>
                   </div>
 
-                  <div className="bg-black/90 backdrop-blur-xl px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
-                      <ShieldCheck size={12} />
-                    </div>
-                    <div>
-                      <p className="text-[7px] font-black text-white/40 uppercase tracking-wider leading-none">Rastreo activo</p>
-                      <p className="text-[9px] font-black text-white leading-none mt-1">Online</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 2: Middle Column - Datos Vehiculares details (fully populated details + switches + RPM) */}
-              <div className="w-[360px] h-full bg-white p-4.5 rounded-[24px] border border-black/5 shadow-sm flex flex-col justify-between overflow-y-auto no-scrollbar shrink-0">
-                <div className="space-y-4">
-                  {/* Vehicle Image & Name Block */}
-                  <div className="flex items-center gap-3.5 bg-[#f8f9fa] p-3 rounded-2xl border border-black/5">
+                  <div className="flex flex-col gap-2 text-center items-center">
                     {vehicleImage ? (
-                      <div className="w-16 h-12 rounded-lg overflow-hidden border border-black/5 bg-white flex items-center justify-center">
+                      <div className="w-full h-28 rounded-2xl overflow-hidden border border-black/5 bg-white flex items-center justify-center shadow-inner">
                         <img 
                           src={`${API_BASE}/uploads/vehiculos/${vehicleImage}`} 
                           alt={vehicleModel} 
@@ -471,29 +447,51 @@ export default function MiDispositivo() {
                         />
                       </div>
                     ) : (
-                      <div className="w-16 h-12 rounded-lg bg-neutral-200 flex items-center justify-center text-neutral-400">
-                        <Car size={24} />
+                      <div className="w-full h-28 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400">
+                        <Car size={32} />
                       </div>
                     )}
-                    <div>
+                    <div className="mt-1">
                       <h4 className="text-xs font-black text-black uppercase leading-tight">{vehicleModel}</h4>
                       <p className="text-[9px] font-bold text-brand-orange bg-brand-orange/5 px-2 py-0.5 rounded border border-brand-orange/10 inline-block mt-1">
                         Placa: {vehSel?.placa}
                       </p>
                     </div>
                   </div>
+                </div>
 
-                  {/* RPM Digital Tachometer & Battery Level */}
-                  <div className="flex items-center gap-4 bg-[#f8f9fa] p-3.5 rounded-2xl border border-black/5">
+                {/* 1.2 Elemento 3D Inferior (Reduced height & width) */}
+                <div className="flex-1 bg-white border border-black/5 rounded-[24px] shadow-sm overflow-hidden relative min-h-[180px]">
+                  <div className="absolute inset-0 z-0">
+                    <Spline scene={townaceModel} />
+                  </div>
+
+                  {/* Overlays on 3D */}
+                  <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5 pointer-events-none">
+                    <div className="bg-black/90 backdrop-blur-xl px-2 py-1 rounded-lg border border-white/10 flex items-center gap-1.5">
+                      <Radio size={10} className="text-brand-orange shrink-0" />
+                      <span className="text-[7px] font-black text-white uppercase tracking-wider">3D Live</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Middle Column - Datos Vehiculares details (now flex-1 with larger controls) */}
+              <div className="flex-1 h-full bg-white p-5 rounded-[24px] border border-black/5 shadow-sm flex flex-col justify-between overflow-y-auto no-scrollbar">
+                <div className="space-y-4">
+                  
+                  {/* RPM Digital Tachometer & Battery Level (Spacious layout) */}
+                  <div className="flex items-center gap-5 bg-[#f8f9fa] p-4.5 rounded-2xl border border-black/5">
                     <RpmGauge rpm={getMetadataVal('rpm', 1000)} />
 
-                    <div className="flex-1 space-y-2">
-                      <div className="bg-white p-2.5 rounded-xl border border-black/5 shadow-sm">
-                        <span className="text-[8px] font-black text-neutral-400 uppercase tracking-wider flex items-center gap-1">
-                          <Battery size={10} className="text-neutral-400" /> Batería
+                    <div className="flex-1 space-y-3">
+                      {/* Battery gauge */}
+                      <div className="bg-white p-3 rounded-xl border border-black/5 shadow-sm">
+                        <span className="text-[10px] font-black text-neutral-400 uppercase tracking-wider flex items-center gap-1">
+                          <Battery size={12} className="text-neutral-400" /> Batería Dispositivo
                         </span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex-1 h-2 bg-neutral-100 rounded-full border border-black/5 overflow-hidden">
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex-1 h-2.5 bg-neutral-100 rounded-full border border-black/5 overflow-hidden">
                             <div 
                               className={`h-full rounded-full transition-all ${
                                 getVal('battery', 85) < 30 ? 'bg-red-500' : 'bg-brand-orange'
@@ -501,63 +499,64 @@ export default function MiDispositivo() {
                               style={{ width: `${getVal('battery', 85)}%` }} 
                             />
                           </div>
-                          <span className="text-[10px] font-black text-black">{getVal('battery', 85)}%</span>
+                          <span className="text-xs font-black text-black">{getVal('battery', 85)}%</span>
                         </div>
                       </div>
 
-                      <div className="bg-white p-2.5 rounded-xl border border-black/5 shadow-sm flex items-center justify-between">
-                        <span className="text-[8px] font-black text-neutral-400 uppercase tracking-wider flex items-center gap-1">
-                          <Signal size={10} className="text-neutral-400" /> Señal GSM
+                      {/* GSM Quality */}
+                      <div className="bg-white p-3 rounded-xl border border-black/5 shadow-sm flex items-center justify-between">
+                        <span className="text-[10px] font-black text-neutral-400 uppercase tracking-wider flex items-center gap-1">
+                          <Signal size={12} className="text-neutral-400" /> Intensidad de Señal
                         </span>
-                        <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded tracking-wide">
+                        <span className="text-[11px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded tracking-wide">
                           {getVal('gsm_signal', null) !== null ? `${getVal('gsm_signal', 0)} dBm` : 'Excelente'}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Technical data inputs */}
+                  {/* Technical data inputs (Larger typography and paddings) */}
                   <div className="space-y-2">
-                    <span className="text-[9px] font-black text-black/40 uppercase tracking-widest block leading-none border-b border-black/5 pb-1.5">
-                      Parámetros Técnicos
+                    <span className="text-[10px] font-black text-black/40 uppercase tracking-widest block leading-none border-b border-black/5 pb-2">
+                      Ficha de Parámetros Técnicos
                     </span>
 
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-2 gap-3.5">
                       <div>
-                        <label className="text-[7.5px] font-black text-black/40 uppercase tracking-wider block">ID Vehículo</label>
+                        <label className="text-[9px] font-black text-black/40 uppercase tracking-wider block">ID Vehículo</label>
                         <input 
                           type="text" 
                           readOnly 
                           value={`#VEH-${getVal('vehicle_id', vehSel?.id)}`}
-                          className="w-full bg-[#f8f9fa] border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
+                          className="w-full bg-[#f8f9fa] border border-black/5 p-2.5 rounded-xl text-[11px] font-black text-black mt-1 focus:outline-none cursor-default"
                         />
                       </div>
                       <div>
-                        <label className="text-[7.5px] font-black text-black/40 uppercase tracking-wider block">ID Dispositivo</label>
+                        <label className="text-[9px] font-black text-black/40 uppercase tracking-wider block">ID Dispositivo</label>
                         <input 
                           type="text" 
                           readOnly 
                           value={`#DEV-${getVal('device_id', 9)}`}
-                          className="w-full bg-[#f8f9fa] border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
+                          className="w-full bg-[#f8f9fa] border border-black/5 p-2.5 rounded-xl text-[11px] font-black text-black mt-1 focus:outline-none cursor-default"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-[7.5px] font-black text-black/40 uppercase tracking-wider block">Último Reporte Telemétrico</label>
+                      <label className="text-[9px] font-black text-black/40 uppercase tracking-wider block">Último Reporte Telemétrico</label>
                       <input 
                         type="text" 
                         readOnly 
                         value={fmtDate(getVal('last_connection', new Date().toISOString()))}
-                        className="w-full bg-[#f8f9fa] border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
+                        className="w-full bg-[#f8f9fa] border border-black/5 p-2.5 rounded-xl text-[11px] font-black text-black mt-1 focus:outline-none cursor-default"
                       />
                     </div>
                   </div>
 
                   {/* Toggle switches for Boolean attributes */}
                   <div className="space-y-2">
-                    <span className="text-[9px] font-black text-black/40 uppercase tracking-widest block leading-none border-b border-black/5 pb-1.5">
-                      Indicadores de Estado
+                    <span className="text-[10px] font-black text-black/40 uppercase tracking-widest block leading-none border-b border-black/5 pb-2">
+                      Indicadores de Hardware
                     </span>
                     <div className="grid grid-cols-2 gap-2">
                       <ToggleSwitch label="Online" checked={getVal('online', true)} />
@@ -571,12 +570,12 @@ export default function MiDispositivo() {
                 </div>
 
                 {/* Status Badge */}
-                <div className="bg-brand-orange/5 p-3 rounded-2xl border border-brand-orange/10 flex items-start gap-2.5 shrink-0 mt-3">
-                   <Info className="text-brand-orange shrink-0 mt-0.5" size={12} />
+                <div className="bg-brand-orange/5 p-3.5 rounded-2xl border border-brand-orange/10 flex items-start gap-3 shrink-0 mt-4">
+                   <Info className="text-brand-orange shrink-0 mt-0.5" size={14} />
                    <div>
-                     <p className="text-[8px] font-black text-brand-orange uppercase tracking-wider leading-none">Vinculación Localizadora</p>
-                     <p className="text-[9px] text-neutral-500 font-semibold leading-relaxed mt-1">
-                       Dispositivo GPS en línea. Los sensores y alarmas responden correctamente.
+                     <p className="text-[9.5px] font-black text-brand-orange uppercase tracking-wider leading-none">Vinculación Localizadora</p>
+                     <p className="text-[10px] text-neutral-500 font-semibold leading-relaxed mt-1">
+                       El rastreador se encuentra enviando tramas correctas a través de los canales GPRS.
                      </p>
                    </div>
                 </div>

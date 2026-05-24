@@ -5,7 +5,7 @@ import {
   Car, AlertCircle, ShieldCheck, 
   Loader2, CheckCircle, 
   ChevronLeft, Satellite, X, ArrowRight,
-  Target, Compass
+  Target, Compass, Home, MapPin
 } from 'lucide-react';
 import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
@@ -412,8 +412,8 @@ export default function RutasFrecuentes() {
               {/* Left Column Stack */}
               <div className="w-[440px] h-full flex flex-col gap-4 shrink-0 min-h-0">
                 
-                {/* 1. Izquierda Superior: Chatbot bubble beautifully adjusted (reduced height) */}
-                <div className="bg-white border border-black/5 rounded-[24px] p-4 shadow-sm flex flex-col gap-2.5 items-center justify-between min-h-0 h-[190px] shrink-0">
+                {/* 1. Izquierda Superior: Chatbot bubble beautifully adjusted (increased height) */}
+                <div className="bg-white border border-black/5 rounded-[24px] p-4 shadow-sm flex flex-col gap-2.5 items-center justify-between min-h-0 h-[220px] shrink-0">
                   <div className="flex items-center gap-3 w-full border-b border-black/5 pb-2 shrink-0">
                     <div className="w-11 h-11 rounded-full overflow-hidden border border-brand-orange/20 bg-white flex items-center justify-center shadow-md relative shrink-0">
                       <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-8 h-8 object-contain" />
@@ -438,8 +438,8 @@ export default function RutasFrecuentes() {
                   </div>
                 </div>
 
-                {/* 2. Izquierda Inferior: 3D Scene + overlaid parameters (flex-1 to be wider and taller) */}
-                <div className="flex-1 rounded-[24px] overflow-hidden relative border border-black/5 bg-[#f1f3f5] min-h-[280px]">
+                {/* 2. Izquierda Inferior: 3D Scene (reduced height) */}
+                <div className="h-[220px] rounded-[24px] overflow-hidden relative border border-black/5 bg-[#f1f3f5] shrink-0">
                   {/* The interactive 3D Spline Scene */}
                   <div className="absolute inset-0 z-0">
                     <Spline scene={townaceModel} />
@@ -452,30 +452,51 @@ export default function RutasFrecuentes() {
                       <span className="text-[7px] font-black text-white uppercase tracking-wider">Flota de Rutas IA</span>
                     </div>
                   </div>
-
-                  {/* Overlaid parameters container directly on top/bottom of the 3D element */}
-                  <div className="absolute bottom-3 inset-x-3 z-10 flex flex-col gap-2 pointer-events-auto bg-black/85 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg">
-                    <div className="flex justify-between items-center text-[10px] font-bold text-white">
-                      <span className="text-white/60 uppercase">Análisis</span>
-                      <span className="font-mono text-brand-orange font-black">Últimos 20 Días</span>
-                    </div>
-                    <div className="w-full h-px bg-white/10" />
-                    <div className="flex justify-between items-center text-[10px] font-bold text-white">
-                      <span className="text-white/60 uppercase">Zonas Habituales (main)</span>
-                      <span className="font-mono text-brand-orange font-black">{mainClusters} zonas</span>
-                    </div>
-                    <div className="w-full h-px bg-white/10" />
-                    <div className="flex justify-between items-center text-[10px] font-bold text-white">
-                      <span className="text-white/60 uppercase">Paradas Frecuentes</span>
-                      <span className="font-mono text-emerald-400 font-black">{totalClusters - mainClusters} paradas</span>
-                    </div>
-                  </div>
                 </div>
 
               </div>
 
               {/* Part 3: Right Column (Leaflet Map) */}
               <div className="flex-1 h-full rounded-[24px] overflow-hidden border-4 border-black/5 relative shadow-2xl bg-white">
+                
+                {/* Horizontal Parameters overlay at the bottom of the map */}
+                <div className="absolute bottom-4 left-4 right-4 z-[1000]">
+                  <div className="bg-black/90 backdrop-blur-xl p-3.5 rounded-2xl border border-white/10 shadow-2xl flex flex-row items-center justify-around gap-4">
+                    {/* Item 1 */}
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-brand-orange/20 flex items-center justify-center text-brand-orange">
+                        <Compass size={16} />
+                      </div>
+                      <div>
+                        <p className="text-[7.5px] font-black text-white/40 uppercase tracking-wider leading-none">Período de Análisis</p>
+                        <p className="text-xs font-black text-white mt-1">Últimos 20 Días</p>
+                      </div>
+                    </div>
+                    <div className="h-6 w-px bg-white/15" />
+                    {/* Item 2 */}
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-brand-orange/20 flex items-center justify-center text-brand-orange">
+                        <Home size={16} />
+                      </div>
+                      <div>
+                        <p className="text-[7.5px] font-black text-white/40 uppercase tracking-wider leading-none">Zonas Habituales (main)</p>
+                        <p className="text-xs font-black text-brand-orange mt-1">{mainClusters} zonas</p>
+                      </div>
+                    </div>
+                    <div className="h-6 w-px bg-white/15" />
+                    {/* Item 3 */}
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <MapPin size={16} />
+                      </div>
+                      <div>
+                        <p className="text-[7.5px] font-black text-white/40 uppercase tracking-wider leading-none">Paradas Frecuentes</p>
+                        <p className="text-xs font-black text-emerald-400 mt-1">{totalClusters - mainClusters} paradas</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <MapContainer
                   center={[centerLat, centerLng]}
                   zoom={12}
