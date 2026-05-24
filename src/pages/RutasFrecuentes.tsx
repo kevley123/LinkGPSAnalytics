@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Car, AlertCircle, ShieldCheck,
-  Loader2, CheckCircle,
+import { 
+  Car, AlertCircle, ShieldCheck, 
+  Loader2, CheckCircle, 
   ChevronLeft, Satellite, X, ArrowRight,
   Target, Compass
 } from 'lucide-react';
-import { MapContainer, TileLayer, useMap, Circle, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
 import Spline from '@splinetool/react-spline';
 // @ts-ignore
 import townaceModel from '../assets/models/animacion_townace.spline?url';
@@ -33,6 +35,24 @@ const ViewUpdater = ({ lat, lng }: { lat: number | null; lng: number | null }) =
   }, [lat, lng, map]);
   return null;
 };
+
+// ── Heatmap Layer Component ──────────────────────────────────────────────────
+const HeatmapLayer = memo(({ points, options }: { points: any[]; options: any }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !points || points.length === 0) return;
+
+    // @ts-ignore
+    const heatLayer = L.heatLayer(points, options).addTo(map);
+
+    return () => {
+      map.removeLayer(heatLayer);
+    };
+  }, [map, points, options]);
+
+  return null;
+});
 
 // ── Vehicle Selection Chip ───────────────────────────────────────────────────
 const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
@@ -66,14 +86,14 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
 const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
   createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-      <motion.div
+      <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <motion.div
+      <motion.div 
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         className="relative w-full max-w-sm bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-[0_32px_80px_rgba(0,0,0,0.15)]"
@@ -123,18 +143,18 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
 
 export default function RutasFrecuentes() {
   const { authToken } = useAppContext();
-
+  
   const [step, setStep] = useState(1);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [vehSel, setVehSel] = useState<any>(null);
-
+  
   // Clusters API response state
   const [data, setData] = useState<any>(null);
-
+  
   const [loadingVeh, setLoadingVeh] = useState(true);
   const [loadingML, setLoadingML] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  
   const [toast, setToast] = useState<Toast | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
 
@@ -166,7 +186,7 @@ export default function RutasFrecuentes() {
     setError(null);
     try {
       const res = await fetch(`${API_BASE}/api/analytics/ml/vehicles/${vehId}/clusters`, {
-        headers: {
+        headers: { 
           'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
         }
@@ -218,9 +238,53 @@ export default function RutasFrecuentes() {
   const centerLat = firstCluster?.centroid?.lat ?? firstCluster?.lat ?? -16.5000;
   const centerLng = firstCluster?.centroid?.lng ?? firstCluster?.centroid?.lon ?? firstCluster?.lng ?? firstCluster?.lon ?? -68.1500;
 
+  // Max density for relative percentage calculation
+  const densities = clustersList.map((cl: any) => cl.density ?? 0);
+  const maxDensity = densities.length > 0 ? Math.max(...densities) : 1;
+
+  // Custom Leaflet Animated DivIcons to avoid image asset path issues in build
+  const createMainIcon = () => {
+    return L.divIcon({
+      className: 'custom-div-icon',
+      html: `
+        <div class="relative flex items-center justify-center w-8 h-8">
+          <div class="absolute inset-0 bg-brand-orange/40 rounded-full animate-ping"></div>
+          <div class="relative w-6 h-6 bg-brand-orange border-2 border-white rounded-full shadow-lg flex items-center justify-center text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+        </div>
+      `,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+  };
+
+  const createSecondaryIcon = () => {
+    return L.divIcon({
+      className: 'custom-div-icon',
+      html: `
+        <div class="relative flex items-center justify-center w-6 h-6">
+          <div class="absolute inset-0 bg-emerald-500/40 rounded-full animate-pulse"></div>
+          <div class="relative w-4 h-4 bg-emerald-500 border border-white rounded-full shadow-md flex items-center justify-center text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+        </div>
+      `,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+  };
+
+  // Convert clustersList into Leaflet Heatmap Points
+  const heatmapPoints = clustersList.map((c: any) => {
+    const cLat = c.centroid?.lat ?? c.lat ?? 0;
+    const cLng = c.centroid?.lng ?? c.centroid?.lon ?? c.lng ?? c.lon ?? 0;
+    return [cLat, cLng, (c.density ?? c.point_count ?? 1) * 3];
+  });
+
   return (
     <div className="text-black h-[calc(100vh-172px)] flex flex-col gap-4 overflow-hidden p-2 relative">
-
+      
       {/* Toast Notifications */}
       <div className="fixed top-6 right-6 z-[99999] pointer-events-none">
         <AnimatePresence>
@@ -274,7 +338,7 @@ export default function RutasFrecuentes() {
 
       {/* Main split interactive workspace */}
       <div className="flex-1 min-h-0 relative rounded-[32px] overflow-hidden border border-black/5 bg-[#f8f9fa] shadow-2xl flex flex-col">
-
+        
         <div className="w-full h-full p-4 relative flex-1 flex flex-row gap-4 min-h-0">
           {error ? (
             <div className="w-full h-full bg-white border border-black/5 rounded-[24px] flex flex-col items-center justify-center gap-4 p-8 shadow-sm">
@@ -285,7 +349,7 @@ export default function RutasFrecuentes() {
                 <h3 className="text-sm font-black text-black">Ocurrió un error</h3>
                 <p className="text-neutral-500 text-xs mt-1 leading-relaxed">{error}</p>
               </div>
-              <button
+              <button 
                 onClick={() => fetchClusters(vehSel.id)}
                 className="px-5 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all shadow-md"
               >
@@ -311,12 +375,13 @@ export default function RutasFrecuentes() {
               <p className="text-xs font-bold text-black/30 uppercase tracking-widest">Calculando clústeres espaciales...</p>
             </div>
           ) : (
-            /* Split layout: 3D Scene View + Stats list (Left) + Leaflet Map (Right) */
+            /* Split layout: 3D Scene View + Param Dashboard + Agent Bubble (Left) + Leaflet Map (Right) */
             <>
-              {/* Left Column: 3D Scene + Detailed JSON Fields */}
+              {/* Left Column: 3D Scene + Parameters overlay + Agent Bubble explanation (No cluster list card) */}
               <div className="flex-1 h-full flex flex-col gap-4 overflow-y-auto no-scrollbar bg-white/40 border border-black/5 rounded-[24px] p-5 shadow-inner">
+                
                 {/* 3D Scene container */}
-                <div className="h-[240px] rounded-2xl overflow-hidden relative border border-black/5 bg-[#f1f3f5] shrink-0">
+                <div className="h-[230px] rounded-2xl overflow-hidden relative border border-black/5 bg-[#f1f3f5] shrink-0">
                   <div className="absolute inset-0 z-0">
                     <Spline scene={townaceModel} />
                   </div>
@@ -329,108 +394,51 @@ export default function RutasFrecuentes() {
                   </div>
                 </div>
 
-                {/* Form fields detailing all JSON values (except id) */}
+                {/* Important parameters/metrics shown directly below the 3D scene */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-black/5 pb-2">
-                    <span className="text-[10px] font-black text-black/40 uppercase tracking-widest">Resumen del Algoritmo</span>
-                    <span className="text-xs font-black text-brand-orange">
-                      {totalClusters} Clústeres Totales
+                    <span className="text-[10px] font-black text-black/40 uppercase tracking-widest">Parámetros Clave del Vehículo</span>
+                    <span className="text-xs font-black text-brand-orange bg-brand-orange/5 px-2 py-0.5 rounded border border-brand-orange/10">
+                      ML Clustering
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-[8px] font-black text-black/40 uppercase tracking-wider block">ID Vehículo</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={data?.vehicle_id ?? 'N/A'}
-                        className="w-full bg-white border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
-                      />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white p-3 rounded-2xl border border-black/5 flex flex-col">
+                      <span className="text-[8px] font-black text-neutral-400 uppercase tracking-wider">ID Vehículo</span>
+                      <span className="text-xs font-black text-black mt-1">{data?.vehicle_id ?? 'N/A'}</span>
                     </div>
-                    <div>
-                      <label className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Clústeres Principales</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={mainClusters}
-                        className="w-full bg-white border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
-                      />
+                    <div className="bg-white p-3 rounded-2xl border border-black/5 flex flex-col">
+                      <span className="text-[8px] font-black text-neutral-400 uppercase tracking-wider">Período de Análisis</span>
+                      <span className="text-xs font-black text-black mt-1">Últimos 20 Días</span>
                     </div>
-                    <div>
-                      <label className="text-[8px] font-black text-black/40 uppercase tracking-wider block">Clústeres Totales</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={totalClusters}
-                        className="w-full bg-white border border-black/5 p-2 rounded-xl text-[10px] font-black text-black mt-1 focus:outline-none cursor-default"
-                      />
+                    <div className="bg-white p-3 rounded-2xl border border-black/5 flex flex-col">
+                      <span className="text-[8px] font-black text-neutral-400 uppercase tracking-wider">Zonas Habituales (main)</span>
+                      <span className="text-xs font-black text-brand-orange mt-1">{mainClusters} zonas</span>
                     </div>
-                  </div>
-
-                  {/* List of individual clusters in read-only form cards */}
-                  <div className="space-y-2.5">
-                    <span className="text-[8px] font-black text-black/40 uppercase tracking-widest block">Detalle de Puntos y Rangos</span>
-
-                    {clustersList.map((c: any, index: number) => {
-                      const cLat = c.centroid?.lat ?? c.lat ?? 0;
-                      const cLng = c.centroid?.lng ?? c.centroid?.lon ?? c.lng ?? c.lon ?? 0;
-
-                      const updateDate = c.updated_at ? new Date(c.updated_at).toLocaleString('es-BO', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                      }) : 'N/A';
-
-                      return (
-                        <div key={index} className="bg-white border border-black/5 p-3 rounded-2xl flex flex-col gap-2 shadow-sm">
-                          <div className="flex items-center justify-between w-full">
-                            <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${c.label === 'main' ? 'bg-brand-orange/10 text-brand-orange' : 'bg-emerald-500/10 text-emerald-600'
-                              }`}>
-                              Clúster #{c.cluster_id} - {c.label === 'main' ? 'Principal' : 'Secundario'}
-                            </span>
-                            <span className="text-[9px] font-black text-neutral-400">
-                              Densidad: {c.density ?? 0}
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-neutral-600">
-                            <div>
-                              <span className="text-[7.5px] font-black text-neutral-400 uppercase block">Coordenadas Centroide</span>
-                              <span className="text-black font-mono">{cLat.toFixed(6)}, {cLng.toFixed(6)}</span>
-                            </div>
-                            <div>
-                              <span className="text-[7.5px] font-black text-neutral-400 uppercase block">Radio de Cobertura</span>
-                              <span className="text-black">{c.radius?.toFixed(1) ?? 0} m</span>
-                            </div>
-                          </div>
-
-                          <div className="text-[10px] font-bold text-neutral-600 flex justify-between border-t border-black/5 pt-1.5 mt-0.5">
-                            <span>Observaciones (point_count):</span>
-                            <span className="text-black font-black">{c.point_count ?? 0}</span>
-                          </div>
-
-                          <div className="text-[8px] font-bold text-neutral-400 flex justify-between">
-                            <span>Actualizado:</span>
-                            <span className="font-mono">{updateDate}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {clustersList.length === 0 && (
-                      <div className="p-8 text-center bg-white border border-dashed border-black/10 rounded-2xl text-[10px] font-black text-black/30 uppercase tracking-widest">
-                        Sin clústeres discretos detectados en el rango.
-                      </div>
-                    )}
+                    <div className="bg-white p-3 rounded-2xl border border-black/5 flex flex-col">
+                      <span className="text-[8px] font-black text-neutral-400 uppercase tracking-wider">Paradas Frecuentes</span>
+                      <span className="text-xs font-black text-emerald-600 mt-1">{totalClusters - mainClusters} ubicaciones</span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Agent bubble explaining the entire information in Step 2 */}
+                <div className="bg-brand-orange/5 p-4 rounded-2xl border border-brand-orange/15 flex items-start gap-3 mt-auto shrink-0 shadow-sm">
+                   <div className="w-10 h-10 rounded-full overflow-hidden border border-brand-orange/20 bg-white flex items-center justify-center shrink-0 shadow-inner">
+                      <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-8 h-8 object-contain animate-pulse" />
+                   </div>
+                   <div className="flex-1 min-w-0">
+                     <span className="text-[8px] font-black text-brand-orange uppercase tracking-wider block">Explicación del Agente Alerta</span>
+                     <p className="text-[10px] text-neutral-600 font-semibold leading-relaxed mt-1.5 italic">
+                       "He analizado la telemetría de los últimos 20 días de esta unidad, filtrando puntos donde estuvo detenida o con movimiento mínimo. Las Zonas Habituales (main) corresponden a ubicaciones recurrentes (ej. base/empresa), mientras que los clústeres secundarios señalan paradas frecuentes."
+                     </p>
+                   </div>
+                </div>
+
               </div>
 
-              {/* Right Column: Leaflet Map (Dashboard.tsx style) */}
+              {/* Right Column: Leaflet Map (Dashboard.tsx style) with Heatmap & Custom Markers */}
               <div className="w-[420px] lg:w-[480px] h-full rounded-[24px] overflow-hidden border-4 border-black/5 relative shadow-2xl bg-white shrink-0">
                 <MapContainer
                   center={[centerLat, centerLng]}
@@ -445,35 +453,81 @@ export default function RutasFrecuentes() {
 
                   <ViewUpdater lat={centerLat} lng={centerLng} />
 
-                  {/* Draw circle overlays for clusters list */}
+                  {/* Draw a real Heatmap density layer from cluster points for smooth visual gradient */}
+                  {heatmapPoints.length > 0 && (
+                    <HeatmapLayer 
+                      points={heatmapPoints}
+                      options={{
+                        radius: 60,
+                        blur: 50,
+                        maxOpacity: 0.75,
+                        minOpacity: 0.15,
+                        gradient: {
+                          0.3: '#10b981', // Emerald for secondary/lower density
+                          0.7: '#f59e0b', // Amber
+                          1.0: '#f97316'  // Brand Orange for main clusters
+                        }
+                      }}
+                    />
+                  )}
+
+                  {/* Draw Custom Animated Markers with custom DivIcon and Tooltips/Popups */}
                   {clustersList.map((c: any, index: number) => {
                     const cLat = c.centroid?.lat ?? c.lat ?? 0;
                     const cLng = c.centroid?.lng ?? c.centroid?.lon ?? c.lng ?? c.lon ?? 0;
+                    const isMain = c.label === 'main';
+
+                    // Relative occupation calculation
+                    const relPct = Math.round(((c.density ?? 0) / maxDensity) * 100);
+
                     return (
                       <div key={index}>
-                        <Circle
-                          center={[cLat, cLng]}
-                          radius={c.radius ?? 150}
-                          pathOptions={{
-                            color: c.label === 'main' ? '#F97316' : '#10b981',
-                            fillColor: c.label === 'main' ? '#F97316' : '#10b981',
-                            fillOpacity: 0.15,
-                            weight: 2,
-                            dashArray: '5, 5'
-                          }}
-                        />
-                        <Marker position={[cLat, cLng]}>
-                          <Popup>
-                            <div className="text-center p-0.5">
-                              <span className={`text-[9px] font-black uppercase tracking-wider block ${c.label === 'main' ? 'text-brand-orange' : 'text-emerald-600'
-                                }`}>
-                                Clúster {c.label === 'main' ? 'Principal' : 'Secundario'}
-                              </span>
-                              <div className="text-[10px] font-bold text-neutral-700 leading-normal mt-1">
-                                Cobertura: {c.radius ?? 150}m
+                        <Marker 
+                          position={[cLat, cLng]}
+                          icon={isMain ? createMainIcon() : createSecondaryIcon()}
+                        >
+                          {/* Mouse hover details: Zone, density, radius, and estimated zone */}
+                          <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
+                            <div className="p-2 font-sans text-neutral-800">
+                              <p className="text-[10px] font-black uppercase text-brand-orange leading-none mb-1">
+                                {isMain ? '📍 Zona Habitual (Base)' : '🛑 Parada Frecuente'}
+                              </p>
+                              {c.estimated_zone && (
+                                <p className="text-[9.5px] font-black text-black leading-tight bg-black/5 px-1 py-0.5 rounded mb-1.5 border border-black/5">
+                                  {c.estimated_zone}
+                                </p>
+                              )}
+                              <div className="space-y-0.5 text-[8.5px] font-semibold text-neutral-500">
+                                <p>Frecuencia: <span className="font-black text-black">{c.density} detenciones</span></p>
+                                <p>Área calculada: <span className="font-black text-black">{c.radius?.toFixed(1)} m</span></p>
+                                <p>Puntos de telemetría: <span className="font-black text-black">{c.point_count}</span></p>
                               </div>
-                              <div className="text-[8px] text-neutral-400 font-mono mt-1">
-                                Observaciones: {c.point_count ?? 0}
+                            </div>
+                          </Tooltip>
+
+                          {/* Click details: Custom SVG progress bar graph inside Leaflet Popup */}
+                          <Popup className="tech-popup">
+                            <div className="p-1 space-y-2.5 w-[160px] text-black">
+                              <p className="text-[9.5px] font-black uppercase text-brand-orange border-b border-black/5 pb-1">
+                                Clúster #{c.cluster_id}
+                              </p>
+                              {c.estimated_zone && (
+                                <div className="text-[8.5px] font-semibold text-neutral-600">
+                                  <span className="text-[7px] font-black text-neutral-400 uppercase block leading-none">Zona Estimada</span>
+                                  <p className="mt-0.5 font-bold text-black">{c.estimated_zone}</p>
+                                </div>
+                              )}
+                              <div className="space-y-1">
+                                <span className="text-[7.5px] font-black text-neutral-400 uppercase block">Ocupación / Densidad</span>
+                                <div className="w-full h-2 bg-neutral-100 rounded-full border border-black/5 overflow-hidden relative">
+                                  <div className="h-full bg-gradient-to-r from-brand-orange/80 to-brand-orange rounded-full transition-all duration-500" style={{ width: `${relPct}%` }} />
+                                </div>
+                                <span className="text-[8px] font-bold text-neutral-500 block">
+                                  {relPct}% de la base máxima
+                                </span>
+                              </div>
+                              <div className="text-[8px] font-bold text-neutral-400 border-t border-black/5 pt-1">
+                                {c.updated_at ? `Actualizado: ${new Date(c.updated_at).toLocaleDateString()}` : ''}
                               </div>
                             </div>
                           </Popup>
@@ -483,7 +537,7 @@ export default function RutasFrecuentes() {
                   })}
                 </MapContainer>
 
-                {/* Floating live tag over Map */}
+                {/* Floating Map Legend Tag */}
                 <div className="absolute top-4 left-4 z-[1000]">
                   <div className="bg-white/95 backdrop-blur-xl px-4 py-2.5 rounded-xl border border-black/5 flex items-center gap-2.5 shadow-xl">
                     <div className="w-7 h-7 rounded-lg bg-brand-orange flex items-center justify-center text-white">
@@ -510,7 +564,7 @@ export default function RutasFrecuentes() {
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 className="bg-white border-4 border-black/5 rounded-[32px] p-6 max-w-2xl w-full shadow-2xl flex flex-col md:flex-row gap-6 overflow-hidden max-h-[90%]"
               >
-                {/* Left Side: Agent Alerta with styled bubble */}
+                {/* Left Side: Agent Alerta with styled bubble explaining the logic */}
                 <div className="md:w-[220px] flex flex-col items-center justify-center text-center gap-3 bg-brand-orange/5 p-4 rounded-2xl border border-brand-orange/10 shrink-0">
                   <div className="w-18 h-18 rounded-full overflow-hidden border border-brand-orange/20 bg-white flex items-center justify-center shadow-md relative">
                     <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-14 h-14 object-contain" />
@@ -518,7 +572,7 @@ export default function RutasFrecuentes() {
                   <div>
                     <span className="text-[8px] font-black text-brand-orange uppercase tracking-wider block leading-none">Agente de Monitoreo</span>
                     <p className="text-[10px] text-neutral-500 font-semibold leading-relaxed mt-2 italic px-1">
-                      "Hola. Este módulo de analítica geoespacial procesa el histórico completo de tus recorridos para identificar de forma inteligente tus rutas frecuentes y bases operativas mediante clústeres espaciales."
+                      "Hola. Este módulo filtra datos de los últimos 20 días de telemetría, localizando los puntos donde la unidad estuvo detenida o con movimiento mínimo. Las Zonas Habituales (main) son tus bases principales y secundarias."
                     </p>
                   </div>
                 </div>
@@ -583,6 +637,15 @@ export default function RutasFrecuentes() {
         .no-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        .tech-popup .leaflet-popup-content-wrapper {
+          border-radius: 16px !important;
+          padding: 8px !important;
+          border: 1px solid rgba(0,0,0,0.05) !important;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+        }
+        .tech-popup .leaflet-popup-tip {
+          box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
         }
       `}</style>
     </div>
