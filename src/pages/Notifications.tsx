@@ -15,7 +15,9 @@ import {
   Check,
   CheckSquare,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { env } from '../config/env';
@@ -59,6 +61,12 @@ export default function Notifications() {
   const [loading, setLoading] = useState(true);
   const [notifs, setNotifs] = useState<NotifAPIResponse[]>([]);
   const [filter, setFilter] = useState<'todas' | 'noleidas' | 'alertas' | 'citas'>('todas');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
 
   const fetchNotifs = async () => {
     if (!authToken) return;
@@ -140,6 +148,10 @@ export default function Notifications() {
     if (filter === 'citas') return n.tipo === 'aprobacion_cita' || n.tipo === 'rechazo_cita';
     return true;
   });
+
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(filteredNotifs.length / ITEMS_PER_PAGE);
+  const paginatedNotifs = filteredNotifs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const unreadCount = notifs.filter(n => n.leido === 'noleido').length;
 
@@ -244,9 +256,10 @@ export default function Notifications() {
             <p className="text-[9px] font-bold uppercase tracking-tighter">No hay notificaciones en este filtro</p>
           </div>
         ) : (
-          <div className="space-y-2.5">
-            <AnimatePresence>
-              {filteredNotifs.map((n, i) => {
+          <>
+            <div className="space-y-2.5">
+              <AnimatePresence>
+                {paginatedNotifs.map((n, i) => {
                 const info = getTipoInfo(n.tipo);
                 const isUnread = n.leido === 'noleido';
                 return (
@@ -318,6 +331,34 @@ export default function Notifications() {
               })}
             </AnimatePresence>
           </div>
+          
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-black/5 mt-4 pt-4">
+              <span className="text-[10px] font-bold text-black/40 uppercase tracking-wider">
+                Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredNotifs.length)} de {filteredNotifs.length}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded-lg border border-black/5 bg-white text-black/50 hover:bg-neutral-50 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="text-[10px] font-black flex items-center justify-center w-8 text-black">
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded-lg border border-black/5 bg-white text-black/50 hover:bg-neutral-50 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
         )}
       </div>
 

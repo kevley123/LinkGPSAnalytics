@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Car, AlertCircle, ShieldCheck, 
   Loader2, Bell, CheckCircle, 
-  ChevronLeft, Satellite, X, ArrowRight
+  ChevronLeft, ChevronRight, Satellite, X, ArrowRight
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { env } from '../config/env';
@@ -110,6 +110,7 @@ export default function AlertasVehiculares() {
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [vehSel, setVehSel] = useState<any>(null);
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   
   const [loadingVeh, setLoadingVeh] = useState(true);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
@@ -161,6 +162,7 @@ export default function AlertasVehiculares() {
       if (!res.ok) throw new Error(`Error de servidor: ${res.status}`);
       const data = await res.json();
       setAlerts(Array.isArray(data) ? data : (data.alerts ?? data.results ?? []));
+      setCurrentPage(1);
       setStep(2);
     } catch (err: any) {
       console.error("Error fetching vehicle alerts:", err);
@@ -240,6 +242,9 @@ export default function AlertasVehiculares() {
   };
 
   const unresolvedCount = alerts.filter(a => !a.resolved).length;
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(alerts.length / ITEMS_PER_PAGE);
+  const paginatedAlerts = alerts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div className="text-black h-[calc(100vh-172px)] flex flex-col gap-4 overflow-hidden p-2 relative">
@@ -357,8 +362,9 @@ export default function AlertasVehiculares() {
             </div>
           ) : (
             /* Cards Grid */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-1 no-scrollbar h-full pb-4">
-              {alerts.map((alert) => {
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-1 no-scrollbar h-full pb-4">
+                {paginatedAlerts.map((alert) => {
                 const isGeofence = alert.alert_type === 'geocerca';
                 const isResolved = alert.resolved;
                 const isResolving = resolvingIds.includes(alert.id);
@@ -453,7 +459,35 @@ export default function AlertasVehiculares() {
                   </div>
                 );
               })}
-            </div>
+              </div>
+              
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-black/5 mt-4 pt-4 shrink-0">
+                  <span className="text-[10px] font-bold text-black/40 uppercase tracking-wider">
+                    Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, alerts.length)} de {alerts.length}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="p-1.5 rounded-lg border border-black/5 bg-white text-black/50 hover:bg-neutral-50 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                    <span className="text-[10px] font-black flex items-center justify-center w-8 text-black">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-black/5 bg-white text-black/50 hover:bg-neutral-50 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 

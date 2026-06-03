@@ -68,6 +68,7 @@ export default function Geocercas() {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [connecting, setConnecting] = useState(true);
+  const [isSplineLoaded, setIsSplineLoaded] = useState(false);
 
   // Initial connection simulation
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function Geocercas() {
   };
 
   const handleViewDetail = (geo: any) => {
+    setIsSplineLoaded(false);
     setGeoSel(geo);
     setStep(3);
   };
@@ -342,12 +344,18 @@ export default function Geocercas() {
           >
             {/* Left Column: 3D Animation Spline */}
             <div className="bg-white/40 backdrop-blur-xl rounded-[40px] border border-black/5 shadow-2xl overflow-hidden relative group">
+              {!isSplineLoaded && (
+                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
+                  <Loader2 className="w-8 h-8 animate-spin text-brand-orange mb-3" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Sincronizando 3D...</span>
+                </div>
+              )}
               <div className="absolute inset-0 z-0">
-                <Spline scene={townaceModel} />
+                <Spline scene={townaceModel} onLoad={() => setIsSplineLoaded(true)} />
               </div>
 
               {/* Technical Info Overlay (Top) */}
-              <div className="absolute top-8 left-8 right-8 z-10 flex flex-wrap gap-3 pointer-events-none">
+              <div className={`absolute top-8 left-8 right-8 z-10 flex flex-wrap gap-3 pointer-events-none transition-opacity duration-700 ${isSplineLoaded ? 'opacity-100' : 'opacity-0'}`}>
                 <div className="bg-black/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-brand-orange/20 flex items-center justify-center text-brand-orange">
                     <Radio size={14} />
@@ -380,7 +388,7 @@ export default function Geocercas() {
               </div>
             </div>
 
-            <div className="bg-white rounded-[40px] overflow-hidden border border-black/5 shadow-2xl relative">
+            <div className={`bg-white rounded-[40px] overflow-hidden border border-black/5 shadow-2xl relative transition-opacity duration-700 delay-100 ${isSplineLoaded ? 'opacity-100' : 'opacity-0'}`}>
               <MapContainer
                 center={[parseFloat(geoSel.lat_centro), parseFloat(geoSel.long_centro)]}
                 zoom={15}
