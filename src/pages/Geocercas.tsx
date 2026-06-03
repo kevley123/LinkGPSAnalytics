@@ -149,13 +149,24 @@ export default function Geocercas() {
     }
   };
 
-  if (connecting) {
-    return <Loading subMessage="Sincronizando núcleo de analítica 3D" />;
-  }
+  const isPageLoading = connecting || (step === 3 && !isSplineLoaded);
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 min-h-screen">
-      {/* Header Secction */}
+    <div className={`p-6 md:p-8 max-w-7xl mx-auto space-y-8 min-h-screen relative ${isPageLoading ? 'overflow-hidden h-screen' : ''}`}>
+      <AnimatePresence>
+        {isPageLoading && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[1000] bg-white flex items-center justify-center"
+          >
+            <Loading subMessage="Sincronizando núcleo de analítica 3D" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className={`transition-opacity duration-700 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
+        {/* Header Secction */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
           <div className="w-14 h-14 rounded-[22px] bg-black text-white flex items-center justify-center shadow-2xl shadow-black/20">
@@ -344,14 +355,15 @@ export default function Geocercas() {
           >
             {/* Left Column: 3D Animation Spline */}
             <div className="bg-white/40 backdrop-blur-xl rounded-[40px] border border-black/5 shadow-2xl overflow-hidden relative group">
-              {!isSplineLoaded && (
-                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
-                  <Loader2 className="w-8 h-8 animate-spin text-brand-orange mb-3" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Sincronizando 3D...</span>
-                </div>
-              )}
               <div className="absolute inset-0 z-0">
-                <Spline scene={townaceModel} onLoad={() => setIsSplineLoaded(true)} />
+                <Spline 
+                  scene={townaceModel} 
+                  onLoad={() => {
+                    setTimeout(() => {
+                      setIsSplineLoaded(true);
+                    }, 1000);
+                  }} 
+                />
               </div>
 
               {/* Technical Info Overlay (Top) */}
@@ -435,6 +447,8 @@ export default function Geocercas() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      </div>
 
       <style>{`
         .leaflet-container { background: #f8f9fa !important; border-radius: 40px; }

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Brain, Sparkles, Cpu, Satellite, ChevronLeft, 
-  Loader2, CheckCircle, AlertCircle, X, ArrowRight, 
+import {
+  Brain, Sparkles, Cpu, Satellite, ChevronLeft,
+  Loader2, CheckCircle, AlertCircle, X, ArrowRight,
   Database, Play, Car, Sliders, Clock
 } from 'lucide-react';
 import agenteAlertaIcon from '../assets/agente_alerta.png';
@@ -20,7 +20,7 @@ interface Toast {
 // ── Typewriter Text Component ───────────────────────────────────────────────
 const TypewriterText = memo(({ text, speed = 25 }: { text: string; speed?: number }) => {
   const [displayed, setDisplayed] = useState('');
-  
+
   useEffect(() => {
     setDisplayed('');
     let i = 0;
@@ -43,8 +43,8 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
   <button
     onClick={() => !loading && onSelect(veh)}
     className={`w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left
-      ${selected 
-        ? 'bg-brand-orange/10 border-brand-orange shadow-md' 
+      ${selected
+        ? 'bg-brand-orange/10 border-brand-orange shadow-md'
         : 'bg-white hover:bg-black/[0.02] border-black/5'
       }`}
   >
@@ -65,14 +65,14 @@ const VehicleChip = memo(({ veh, selected, onSelect, loading }: any) => (
 const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
   createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         className="relative w-full max-w-sm bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-[0_32px_80px_rgba(0,0,0,0.15)]"
@@ -124,7 +124,7 @@ const ModalNoService = memo(({ message, onClose, onSolicitar }: any) =>
 const ModalTraining = memo(({ status, taskId, successResult, onClose, jobType }: any) => {
   const isSuccess = status === 'SUCCESS';
   const isFailure = status === 'FAILURE';
-  
+
   const getJobTitle = () => {
     if (isSuccess) {
       if (jobType === 'train') return '¡Entrenamiento Completado!';
@@ -150,7 +150,7 @@ const ModalTraining = memo(({ status, taskId, successResult, onClose, jobType }:
       {/* Non-clickable background mask */}
       <div className="absolute inset-0 bg-black/85 backdrop-blur-md" />
 
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 30 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         className="relative w-full max-w-md bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-[0_32px_80px_rgba(0,0,0,0.3)] z-10"
@@ -199,13 +199,12 @@ const ModalTraining = memo(({ status, taskId, successResult, onClose, jobType }:
                 <span className="text-[7.5px] font-black text-neutral-400 uppercase tracking-wider block">Estado del Proceso</span>
                 <span className="text-[11px] font-black text-black uppercase mt-0.5 block">{status}</span>
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-[8.5px] font-black uppercase tracking-wider ${
-                isSuccess 
-                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
-                  : isFailure 
+              <span className={`px-2.5 py-1 rounded-full text-[8.5px] font-black uppercase tracking-wider ${isSuccess
+                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  : isFailure
                     ? 'bg-red-100 text-red-700 border border-red-200'
                     : 'bg-amber-100 text-amber-700 border border-amber-200 animate-pulse'
-              }`}>
+                }`}>
                 {isSuccess ? 'Completado' : isFailure ? 'Error' : 'Procesando'}
               </span>
             </div>
@@ -255,7 +254,7 @@ const ModalTraining = memo(({ status, taskId, successResult, onClose, jobType }:
 
 export default function ModeloIA() {
   const { authToken } = useAppContext();
-  
+
   const [step, setStep] = useState(1);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [vehSel, setVehSel] = useState<any>(null);
@@ -353,7 +352,7 @@ export default function ModeloIA() {
   // Action 1: Handle Training (POST)
   const handleTrainModel = async (daysVal: number) => {
     if (!authToken || !vehSel) return;
-    
+
     setJobType('train');
     setTrainingStatus('queued');
     setTrainingTaskId(null);
@@ -373,7 +372,7 @@ export default function ModeloIA() {
 
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const dataTask = await res.json();
-      
+
       if (dataTask.task_id) {
         setTrainingTaskId(dataTask.task_id);
         setTrainingStatus(dataTask.status || 'PENDING');
@@ -393,7 +392,7 @@ export default function ModeloIA() {
   // Action 2: Handle Re-evaluate Inference (POST)
   const handleReevaluateModel = async (hoursVal: number) => {
     if (!authToken || !vehSel) return;
-    
+
     setJobType('infer');
     setTrainingStatus('queued');
     setTrainingTaskId(null);
@@ -413,7 +412,7 @@ export default function ModeloIA() {
 
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const dataTask = await res.json();
-      
+
       if (dataTask.task_id) {
         setTrainingTaskId(dataTask.task_id);
         setTrainingStatus(dataTask.status || 'queued');
@@ -433,7 +432,7 @@ export default function ModeloIA() {
   // Action 3: Handle Clustering (POST)
   const handleClusterModel = async (daysVal: number) => {
     if (!authToken || !vehSel) return;
-    
+
     setJobType('cluster');
     setTrainingStatus('processing');
     setTrainingTaskId(null);
@@ -453,7 +452,7 @@ export default function ModeloIA() {
 
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const dataTask = await res.json();
-      
+
       if (dataTask.task_id) {
         setTrainingTaskId(dataTask.task_id);
         setTrainingStatus(dataTask.status || 'processing');
@@ -478,7 +477,7 @@ export default function ModeloIA() {
     const checkStatus = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/analytics/ml/tasks/${trainingTaskId}/status`, {
-          headers: { 
+          headers: {
             'Authorization': `Bearer ${authToken}`,
             'Accept': 'application/json'
           }
@@ -492,10 +491,10 @@ export default function ModeloIA() {
           setTrainingResult(dataStatus.result || { message: dataStatus.message || 'La tarea finalizó con éxito.' });
           setToast({
             id: 'train-ok',
-            message: jobType === 'train' 
-              ? '¡Modelo de IA entrenado correctamente!' 
-              : jobType === 'infer' 
-                ? '¡Revaluación de anomalías completada!' 
+            message: jobType === 'train'
+              ? '¡Modelo de IA entrenado correctamente!'
+              : jobType === 'infer'
+                ? '¡Revaluación de anomalías completada!'
                 : '¡Agrupación de zonas frecuentes finalizada!'
           });
         } else if (dataStatus.status === 'FAILURE') {
@@ -552,7 +551,7 @@ export default function ModeloIA() {
 
   return (
     <div className="text-black h-[calc(100vh-172px)] flex flex-col gap-4 overflow-hidden p-2 relative">
-      
+
       {/* Toast Notification */}
       <div className="fixed top-6 right-6 z-[99999] pointer-events-none">
         <AnimatePresence>
@@ -606,7 +605,7 @@ export default function ModeloIA() {
 
       {/* Workspace Panel */}
       <div className="flex-1 min-h-0 relative rounded-[32px] overflow-hidden border border-black/5 bg-[#f8f9fa] shadow-2xl flex flex-col">
-        
+
         <div className="w-full h-full p-4 relative flex-1 flex flex-row gap-4 min-h-0">
           {error ? (
             <div className="w-full h-full bg-white border border-black/5 rounded-[24px] flex flex-col items-center justify-center gap-4 p-8 shadow-sm">
@@ -617,7 +616,7 @@ export default function ModeloIA() {
                 <h3 className="text-sm font-black text-black">Ocurrió un error</h3>
                 <p className="text-neutral-500 text-xs mt-1 leading-relaxed">{error}</p>
               </div>
-              <button 
+              <button
                 onClick={() => fetchVehicleDetails(vehSel.id)}
                 className="px-5 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all shadow-md"
               >
@@ -651,7 +650,7 @@ export default function ModeloIA() {
                   {/* Large Brain Icon */}
                   <div className="flex flex-col items-center text-center p-4 bg-brand-orange/5 rounded-2xl border border-brand-orange/10 relative overflow-hidden">
                     <div className="absolute -top-10 -right-10 w-24 h-24 bg-brand-orange/10 rounded-full blur-xl pointer-events-none" />
-                    <motion.div 
+                    <motion.div
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                       className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-md text-brand-orange border border-brand-orange/20"
@@ -659,7 +658,7 @@ export default function ModeloIA() {
                       <Brain size={30} />
                     </motion.div>
                     <h3 className="text-sm font-black text-black uppercase tracking-tight mt-3">Resumen de Diagnóstico</h3>
-                    <p className="text-[10px] font-black text-brand-orange uppercase tracking-wider mt-1">Dispositivo ID: #{summaryData?.device_id || '—'}</p>
+                    <p className="text-[10px] font-black text-brand-orange uppercase tracking-wider mt-1">Dispositivo || '—'</p>
                   </div>
 
                   {/* Summary lists */}
@@ -923,9 +922,8 @@ export default function ModeloIA() {
                           </span>
                         </div>
                       </div>
-                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
-                        deviceData.ignition ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${deviceData.ignition ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
+                        }`}>
                         {deviceData.ignition ? 'Ignición' : 'Apagado'}
                       </span>
                     </div>
@@ -952,7 +950,7 @@ export default function ModeloIA() {
                     <img src={agenteAlertaIcon} alt="Agente Alerta" className="w-16 h-16 object-contain" />
                     <span className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full animate-pulse"></span>
                   </div>
-                  
+
                   {/* Styled speech bubble with Typewriter Text animation */}
                   <div className="relative bg-white border border-black/5 p-5 rounded-2xl shadow-sm">
                     {/* speech bubble triangle */}
@@ -987,11 +985,11 @@ export default function ModeloIA() {
                     ) : (
                       vehicles.map(v => (
                         <VehicleChip
-                           key={v.id}
-                           veh={v}
-                           selected={vehSel?.id === v.id}
-                           loading={loadingML && vehSel?.id === v.id}
-                           onSelect={onSelectVehicle}
+                          key={v.id}
+                          veh={v}
+                          selected={vehSel?.id === v.id}
+                          loading={loadingML && vehSel?.id === v.id}
+                          onSelect={onSelectVehicle}
                         />
                       ))
                     )}
